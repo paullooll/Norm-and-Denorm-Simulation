@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Normalization Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Database Normalization Simulator</h1>
+            <p class="subtitle">Compare Normalized vs Denormalized Database Performance</p>
+            <p class="description">
+                This interactive simulator demonstrates the performance differences between normalized and denormalized
+                database schemas under OLTP (transactional) and OLAP (analytical) workloads using a fast food ordering scenario.
+            </p>
+        </header>
+
+        <!-- Control Panel -->
+        <section class="control-panel">
+            <h2>Simulation Controls</h2>
+            <div class="button-grid">
+                <button class="sim-button oltp-normalized" onclick="runSimulation('oltp', 'normalized')">
+                    <span class="button-icon">🍔</span>
+                    <span class="button-text">
+                        <strong>Transactional</strong><br>
+                        <small>Normalized</small><br>
+                        <em>Write-heavy</em>
+                    </span>
+                </button>
+
+                <button class="sim-button oltp-denormalized" onclick="runSimulation('oltp', 'denormalized')">
+                    <span class="button-icon">🍟</span>
+                    <span class="button-text">
+                        <strong>Transactional</strong><br>
+                        <small>Denormalized</small><br>
+                        <em>Write-heavy</em>
+                    </span>
+                </button>
+
+                <button class="sim-button olap-normalized" onclick="runSimulation('olap', 'normalized')">
+                    <span class="button-icon">🥤</span>
+                    <span class="button-text">
+                        <strong>Analytical</strong><br>
+                        <small>Normalized</small><br>
+                        <em>Read-heavy</em>
+                    </span>
+                </button>
+
+                <button class="sim-button olap-denormalized" onclick="runSimulation('olap', 'denormalized')">
+                    <span class="button-icon">🍕</span>
+                    <span class="button-text">
+                        <strong>Analytical</strong><br>
+                        <small>Denormalized</small><br>
+                        <em>Read-heavy</em>
+                    </span>
+                </button>
+
+                <button class="sim-button view-tables" onclick="showTablesModal()">
+                    <span class="button-icon">📋</span>
+                    <span class="button-text">
+                        <strong>View Tables</strong><br>
+                        <small>& Data</small><br>
+                        <em>Schema Explorer</em>
+                    </span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <h2>Simulation Results</h2>
+
+            <!-- Performance Metrics -->
+            <div class="metrics-container">
+                <div class="metric-card">
+                    <h3>Execution Time</h3>
+                    <div class="metric-comparison">
+                        <div class="metric-item normalized">
+                            <span class="label">Normalized:</span>
+                            <span class="value" id="normalizedTime">-</span>
+                        </div>
+                        <div class="metric-item denormalized">
+                            <span class="label">Denormalized:</span>
+                            <span class="value" id="denormalizedTime">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h3>Performance Difference</h3>
+                    <div class="performance-diff" id="performanceDiff">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schema Comparison -->
+            <div class="schema-comparison">
+                <div class="schema-panel">
+                    <h3>Normalized Schema</h3>
+                    <div class="schema-info">
+                        <p><strong>Structure:</strong> <span id="normalizedStructure">-</span></p>
+                        <p><strong>Tables:</strong> <span id="normalizedTables">-</span></p>
+                        <p><strong>Query:</strong> <span id="normalizedQuery">-</span></p>
+                    </div>
+                    <div class="results-container">
+                        <h4>Results</h4>
+                        <div class="results-table" id="normalizedResults">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="schema-panel">
+                    <h3>Denormalized Schema</h3>
+                    <div class="schema-info">
+                        <p><strong>Structure:</strong> <span id="denormalizedStructure">-</span></p>
+                        <p><strong>Tables:</strong> <span id="denormalizedTables">-</span></p>
+                        <p><strong>Query:</strong> <span id="denormalizedQuery">-</span></p>
+                    </div>
+                    <div class="results-container">
+                        <h4>Results</h4>
+                        <div class="results-table" id="denormalizedResults">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Visualization -->
+            <div class="chart-container">
+                <h3>Performance Comparison</h3>
+                <canvas id="performanceChart" width="800" height="400"></canvas>
+            </div>
+
+            <!-- Educational Summary -->
+            <div class="educational-summary">
+                <h3>📚 Key Takeaways</h3>
+                <div class="summary-grid">
+                    <div class="summary-card normalized">
+                        <h4>✅ Normalized Schema Advantages</h4>
+                        <ul>
+                            <li><strong>Data Integrity:</strong> Eliminates data redundancy and anomalies</li>
+                            <li><strong>ACID Compliance:</strong> Better support for transactions</li>
+                            <li><strong>Storage Efficiency:</strong> Minimal data duplication</li>
+                            <li><strong>Update Flexibility:</strong> Single point of truth for modifications</li>
+                            <li><strong>Referential Integrity:</strong> Foreign key constraints ensure consistency</li>
+                        </ul>
+                    </div>
+
+                    <div class="summary-card denormalized">
+                        <h4>⚡ Denormalized Schema Advantages</h4>
+                        <ul>
+                            <li><strong>Query Performance:</strong> Faster reads with no JOINs required</li>
+                            <li><strong>Simplified Queries:</strong> Direct access to all needed data</li>
+                            <li><strong>Analytics Optimization:</strong> Pre-aggregated data for reporting</li>
+                            <li><strong>Reduced Complexity:</strong> Fewer tables to manage</li>
+                            <li><strong>Read-Heavy Optimization:</strong> Ideal for OLAP workloads</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="workload-analysis">
+                    <h4>🎯 Workload Recommendations</h4>
+                    <div class="workload-cards">
+                        <div class="workload-card oltp">
+                            <h5>OLTP (Transactional)</h5>
+                            <p><strong>Best Choice:</strong> Normalized Schema</p>
+                            <p>Frequent writes, updates, and deletes require data integrity and ACID properties.</p>
+                        </div>
+                        <div class="workload-card olap">
+                            <h5>OLAP (Analytical)</h5>
+                            <p><strong>Best Choice:</strong> Denormalized Schema</p>
+                            <p>Complex analytical queries benefit from pre-joined data and faster reads.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Running simulation...</p>
+        </div>
+
+        <!-- Tables Modal -->
+        <div class="modal" id="tablesModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Database Schema Explorer</h2>
+                    <button class="modal-close" onclick="closeTablesModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="schema-tabs">
+                        <button class="tab-button active" onclick="showSchema('normalized')">Normalized Schema (3NF)</button>
+                        <button class="tab-button" onclick="showSchema('denormalized')">Denormalized Schema</button>
+                    </div>
+
+                    <div class="schema-content" id="normalizedSchema">
+                        <div class="schema-description">
+                            <h3>Normalized Schema (3NF)</h3>
+                            <p>Follows normalization principles with minimal data redundancy and proper relationships.</p>
+                        </div>
+                        <div class="tables-container">
+                            <!-- Tables will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="schema-content" id="denormalizedSchema" style="display: none;">
+                        <div class="schema-description">
+                            <h3>Denormalized Schema</h3>
+                            <p>Combines multiple entities for optimized read performance with redundant data.</p>
+                        </div>
+                        <div class="tables-container">
+                            <!-- Tables will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schema Information -->
+        <section class="info-section">
+            <div class="info-panel">
+                <h3>Normalized Schema (3NF)</h3>
+                <ul>
+                    <li><strong>Advantages:</strong> Data integrity, minimal redundancy, flexible updates</li>
+                    <li><strong>Disadvantages:</strong> Complex joins, slower reads, more tables</li>
+                    <li><strong>Best for:</strong> OLTP operations (frequent writes)</li>
+                </ul>
+                <div class="schema-tables">
+                    <h4>Tables:</h4>
+                    <ul>
+                        <li><code>customers</code> - Customer information</li>
+                        <li><code>stores</code> - Store locations and details</li>
+                        <li><code>employees</code> - Staff information</li>
+                        <li><code>menu_items</code> - Available food items</li>
+                        <li><code>orders</code> - Order headers</li>
+                        <li><code>order_items</code> - Individual order line items</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>Denormalized Schema</h3>
+                <ul>
+                    <li><strong>Advantages:</strong> Faster reads, simpler queries, better for analytics</li>
+                    <li><strong>Disadvantages:</strong> Data redundancy, update anomalies, larger storage</li>
+                    <li><strong>Best for:</strong> OLAP operations (complex reads)</li>
+                </ul>
+                <div class="schema-tables">
+                    <h4>Tables:</h4>
+                    <ul>
+                        <li><code>denormalized_orders</code> - Combined order data</li>
+                        <li><code>denormalized_analytics</code> - Pre-aggregated analytics data</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
