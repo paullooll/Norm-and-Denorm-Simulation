@@ -27,7 +27,7 @@
                 </button>
                 <button class="tab-nav-button" onclick="showTab('data')">
                     <span class="tab-icon">🗃️</span>
-                    <span class="tab-text">Data & APIs</span>
+                    <span class="tab-text">Simulation</span>
                 </button>
                 <button class="tab-nav-button" onclick="showTab('schema')">
                     <span class="tab-icon">📋</span>
@@ -67,24 +67,111 @@
                             <h3>🚀 Getting Started</h3>
                             <p>Choose a section above to explore different aspects of the simulation:</p>
                             <ul class="feature-list">
-                                <li><strong>Data & APIs:</strong> Run simulations and view performance comparisons</li>
+                                <li><strong>Simulation:</strong> Run simulations and view performance comparisons</li>
                                 <li><strong>Schema Explorer:</strong> Examine database structure and sample data</li>
                             </ul>
+                        </div>
+
+                        <!-- Key Takeaways Section -->
+                        <div class="key-takeaways-section">
+                            <h3>📚 Key Takeaways</h3>
+                            <div class="summary-grid">
+                                <div class="summary-card normalized">
+                                    <h4>✅ Normalized Schema Advantages</h4>
+                                    <ul>
+                                        <li><strong>Data Integrity:</strong> Eliminates data redundancy and anomalies</li>
+                                        <li><strong>ACID Compliance:</strong> Better support for transactions</li>
+                                        <li><strong>Storage Efficiency:</strong> Minimal data duplication</li>
+                                        <li><strong>Update Flexibility:</strong> Single point of truth for modifications</li>
+                                        <li><strong>Referential Integrity:</strong> Foreign key constraints ensure consistency</li>
+                                    </ul>
+                                </div>
+
+                                <div class="summary-card denormalized">
+                                    <h4>⚡ Denormalized Schema Advantages</h4>
+                                    <ul>
+                                        <li><strong>Query Performance:</strong> Faster reads with no JOINs required</li>
+                                        <li><strong>Simplified Queries:</strong> Direct access to all needed data</li>
+                                        <li><strong>Analytics Optimization:</strong> Pre-aggregated data for reporting</li>
+                                        <li><strong>Reduced Complexity:</strong> Fewer tables to manage</li>
+                                        <li><strong>Read-Heavy Optimization:</strong> Ideal for OLAP workloads</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Workload Recommendations Section -->
+                        <div class="workload-recommendations-section">
+                            <h3>🎯 Workload Recommendations</h3>
+                            <div class="workload-cards">
+                                <div class="workload-card oltp">
+                                    <h4>OLTP (Transactional)</h4>
+                                    <p><strong>Best Choice:</strong> Normalized Schema</p>
+                                    <p>Frequent writes, updates, and deletes require data integrity and ACID properties.</p>
+                                </div>
+                                <div class="workload-card olap">
+                                    <h4>OLAP (Analytical)</h4>
+                                    <p><strong>Best Choice:</strong> Denormalized Schema</p>
+                                    <p>Complex analytical queries benefit from pre-joined data and faster reads.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schema Information Section -->
+                        <div class="schema-info-section">
+                            <h3>📋 Schema Information</h3>
+                            <div class="info-panels">
+                                <div class="info-panel">
+                                    <h4>Normalized Schema (3NF)</h4>
+                                    <ul>
+                                        <li><strong>Advantages:</strong> Data integrity, minimal redundancy, flexible updates</li>
+                                        <li><strong>Disadvantages:</strong> Complex joins, slower reads, more tables</li>
+                                        <li><strong>Best for:</strong> OLTP operations (frequent writes)</li>
+                                    </ul>
+                                    <div class="schema-tables">
+                                        <h5>Tables:</h5>
+                                        <ul>
+                                            <li><code>customers</code> - Customer information</li>
+                                            <li><code>stores</code> - Store locations and details</li>
+                                            <li><code>employees</code> - Staff information</li>
+                                            <li><code>menu_items</code> - Available food items</li>
+                                            <li><code>orders</code> - Order headers</li>
+                                            <li><code>order_items</code> - Individual order line items</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="info-panel">
+                                    <h4>Denormalized Schema</h4>
+                                    <ul>
+                                        <li><strong>Advantages:</strong> Faster reads, simpler queries, better for analytics</li>
+                                        <li><strong>Disadvantages:</strong> Data redundancy, update anomalies, larger storage</li>
+                                        <li><strong>Best for:</strong> OLAP operations (complex reads)</li>
+                                    </ul>
+                                    <div class="schema-tables">
+                                        <h5>Tables:</h5>
+                                        <ul>
+                                            <li><code>denormalized_orders</code> - Combined order data</li>
+                                            <li><code>denormalized_analytics</code> - Pre-aggregated analytics data</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Data & APIs Tab -->
+                <!-- Simulation Tab -->
                 <div class="tab-panel" id="data">
                     <div class="simulation-section">
                         <h2>Database Performance Simulations</h2>
+                        <h3>🚀 Database Performance Simulations</h3>
                         <p class="section-description">
                             Run interactive simulations to compare normalized vs denormalized database performance
                             under different workload conditions.
                         </p>
 
                         <div class="unified-simulation-section">
-                            <h3>🚀 Database Performance Simulations</h3>
                             <p class="section-description">
                                 Compare normalized and denormalized database performance across different workload types.
                             </p>
@@ -98,14 +185,12 @@
                                     </div>
                                     <div class="schema-comparison">
                                         <button class="sim-button normalized" onclick="runSimulation('oltp', 'normalized')">
-                                            <span class="button-icon">🏗️</span>
                                             <span class="button-text">
                                                 <strong>Normalized</strong><br>
                                                 <small>3NF Schema</small>
                                             </span>
                                         </button>
                                         <button class="sim-button denormalized" onclick="runSimulation('oltp', 'denormalized')">
-                                            <span class="button-icon">⚡</span>
                                             <span class="button-text">
                                                 <strong>Denormalized</strong><br>
                                                 <small>Flat Schema</small>
@@ -122,14 +207,12 @@
                                     </div>
                                     <div class="schema-comparison">
                                         <button class="sim-button normalized" onclick="runSimulation('olap', 'normalized')">
-                                            <span class="button-icon">🏗️</span>
                                             <span class="button-text">
                                                 <strong>Normalized</strong><br>
                                                 <small>3NF Schema</small>
                                             </span>
                                         </button>
                                         <button class="sim-button denormalized" onclick="runSimulation('olap', 'denormalized')">
-                                            <span class="button-icon">⚡</span>
                                             <span class="button-text">
                                                 <strong>Denormalized</strong><br>
                                                 <small>Flat Schema</small>
@@ -141,7 +224,7 @@
                         </div>
                     </div>
 
-                    <!-- Simulation Results Section (Data & APIs tab only) -->
+                    <!-- Simulation Results Section (Simulation tab only) -->
                     <div class="results-section" id="dataResultsSection" style="display: none;">
                         <h2>Simulation Results</h2>
 
@@ -222,49 +305,6 @@
                             </div>
                         </div>
 
-                        <!-- Educational Summary -->
-                        <div class="educational-summary">
-                            <h3>📚 Key Takeaways</h3>
-                            <div class="summary-grid">
-                                <div class="summary-card normalized">
-                                    <h4>✅ Normalized Schema Advantages</h4>
-                                    <ul>
-                                        <li><strong>Data Integrity:</strong> Eliminates data redundancy and anomalies</li>
-                                        <li><strong>ACID Compliance:</strong> Better support for transactions</li>
-                                        <li><strong>Storage Efficiency:</strong> Minimal data duplication</li>
-                                        <li><strong>Update Flexibility:</strong> Single point of truth for modifications</li>
-                                        <li><strong>Referential Integrity:</strong> Foreign key constraints ensure consistency</li>
-                                    </ul>
-                                </div>
-
-                                <div class="summary-card denormalized">
-                                    <h4>⚡ Denormalized Schema Advantages</h4>
-                                    <ul>
-                                        <li><strong>Query Performance:</strong> Faster reads with no JOINs required</li>
-                                        <li><strong>Simplified Queries:</strong> Direct access to all needed data</li>
-                                        <li><strong>Analytics Optimization:</strong> Pre-aggregated data for reporting</li>
-                                        <li><strong>Reduced Complexity:</strong> Fewer tables to manage</li>
-                                        <li><strong>Read-Heavy Optimization:</strong> Ideal for OLAP workloads</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="workload-analysis">
-                                <h4>🎯 Workload Recommendations</h4>
-                                <div class="workload-cards">
-                                    <div class="workload-card oltp">
-                                        <h5>OLTP (Transactional)</h5>
-                                        <p><strong>Best Choice:</strong> Normalized Schema</p>
-                                        <p>Frequent writes, updates, and deletes require data integrity and ACID properties.</p>
-                                    </div>
-                                    <div class="workload-card olap">
-                                        <h5>OLAP (Analytical)</h5>
-                                        <p><strong>Best Choice:</strong> Denormalized Schema</p>
-                                        <p>Complex analytical queries benefit from pre-joined data and faster reads.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -280,7 +320,7 @@
                             <div class="placeholder-content">
                                 <span class="placeholder-icon">📈</span>
                                 <h3>Run Simulations to View Analytics</h3>
-                                <p>Use the "Data & APIs" tab to run simulations and generate performance analytics.</p>
+                                <p>Use the "Simulation" tab to run simulations and generate performance analytics.</p>
                                 <button class="cta-button" onclick="showTab('data')">Go to Simulations</button>
                             </div>
                         </div>
@@ -437,44 +477,6 @@
             </div>
         </div>
 
-        <!-- Schema Information -->
-        <section class="info-section">
-            <div class="info-panel">
-                <h3>Normalized Schema (3NF)</h3>
-                <ul>
-                    <li><strong>Advantages:</strong> Data integrity, minimal redundancy, flexible updates</li>
-                    <li><strong>Disadvantages:</strong> Complex joins, slower reads, more tables</li>
-                    <li><strong>Best for:</strong> OLTP operations (frequent writes)</li>
-                </ul>
-                <div class="schema-tables">
-                    <h4>Tables:</h4>
-                    <ul>
-                        <li><code>customers</code> - Customer information</li>
-                        <li><code>stores</code> - Store locations and details</li>
-                        <li><code>employees</code> - Staff information</li>
-                        <li><code>menu_items</code> - Available food items</li>
-                        <li><code>orders</code> - Order headers</li>
-                        <li><code>order_items</code> - Individual order line items</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="info-panel">
-                <h3>Denormalized Schema</h3>
-                <ul>
-                    <li><strong>Advantages:</strong> Faster reads, simpler queries, better for analytics</li>
-                    <li><strong>Disadvantages:</strong> Data redundancy, update anomalies, larger storage</li>
-                    <li><strong>Best for:</strong> OLAP operations (complex reads)</li>
-                </ul>
-                <div class="schema-tables">
-                    <h4>Tables:</h4>
-                    <ul>
-                        <li><code>denormalized_orders</code> - Combined order data</li>
-                        <li><code>denormalized_analytics</code> - Pre-aggregated analytics data</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
     </div>
 
     <script src="app.js"></script>
