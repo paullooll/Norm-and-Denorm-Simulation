@@ -200,7 +200,9 @@ async function placeOrderDenormalized(customerData, storeData, employeeData, ite
         );
 
         await client.query('COMMIT');
-        return { totalAmount };
+        // Generate a mock orderId for consistency with normalized response
+        const mockOrderId = 'DENORM_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        return { orderId: mockOrderId, totalAmount };
     } catch (error) {
         await client.query('ROLLBACK');
         throw error;
@@ -491,6 +493,7 @@ app.post('/api/oltp/denormalized/place-order', async (req, res) => {
         if (result.success) {
             res.json({
                 success: true,
+                orderId: result.data.orderId,
                 totalAmount: result.data.totalAmount,
                 executionTime: result.executionTime,
                 message: 'Order placed successfully'
