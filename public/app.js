@@ -1,10 +1,11 @@
-// Database Normalization Simulator - Enhanced Frontend JavaScript
+// Database Normalization Simulator - Enhanced Frontend JavaScript with Tab Navigation
 
 class DatabaseSimulator {
     constructor() {
         this.performanceChart = null;
         this.tablesModal = null;
         this.currentSchema = 'normalized';
+        this.currentTab = 'overview';
         this.initializeEventListeners();
         this.loadSampleData();
         this.loadTableSchemas();
@@ -27,6 +28,46 @@ class DatabaseSimulator {
                 this.closeTablesModal();
             }
         });
+    }
+
+    // Tab Navigation
+    showTab(tabName) {
+        // Hide all tab panels
+        const tabPanels = document.querySelectorAll('.tab-panel');
+        tabPanels.forEach(panel => {
+            panel.classList.remove('active');
+        });
+
+        // Remove active class from all tab buttons
+        const tabButtons = document.querySelectorAll('.tab-nav-button');
+        tabButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // Show selected tab panel
+        const selectedPanel = document.getElementById(tabName);
+        if (selectedPanel) {
+            selectedPanel.classList.add('active');
+        }
+
+        // Add active class to clicked button
+        const activeButton = document.querySelector(`[onclick="showTab('${tabName}')"]`);
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+
+        this.currentTab = tabName;
+
+        // Trigger specific actions for certain tabs
+        if (tabName === 'analytics' && this.performanceChart) {
+            // Refresh analytics if chart exists
+            this.refreshAnalytics();
+        }
+    }
+
+    refreshAnalytics() {
+        // This could be used to refresh analytics data if needed
+        console.log('Analytics tab activated');
     }
 
     async loadSampleData() {
@@ -570,11 +611,18 @@ class DatabaseSimulator {
 // Initialize the simulator when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.simulator = new DatabaseSimulator();
+
+    // Show overview tab by default
+    window.simulator.showTab('overview');
 });
 
-// Make runSimulation function globally available
+// Make functions globally available
 function runSimulation(workloadType, schemaType) {
     window.simulator.runSimulation(workloadType, schemaType);
+}
+
+function showTab(tabName) {
+    window.simulator.showTab(tabName);
 }
 
 // Modal functions for global access

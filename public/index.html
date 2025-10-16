@@ -18,54 +18,237 @@
             </p>
         </header>
 
-        <!-- Control Panel -->
-        <section class="control-panel">
-            <h2>Simulation Controls</h2>
-            <div class="button-grid">
-                <button class="sim-button oltp-normalized" onclick="runSimulation('oltp', 'normalized')">
-                    <span class="button-icon">🍔</span>
-                    <span class="button-text">
-                        <strong>Transactional</strong><br>
-                        <small>Normalized</small><br>
-                        <em>Write-heavy</em>
-                    </span>
+        <!-- Tab Navigation System -->
+        <section class="tab-navigation">
+            <div class="tab-header">
+                <button class="tab-nav-button active" onclick="showTab('overview')">
+                    <span class="tab-icon">🏠</span>
+                    <span class="tab-text">Overview</span>
                 </button>
+                <button class="tab-nav-button" onclick="showTab('data')">
+                    <span class="tab-icon">🗃️</span>
+                    <span class="tab-text">Data & APIs</span>
+                </button>
+                <button class="tab-nav-button" onclick="showTab('analytics')">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-text">Analytics</span>
+                </button>
+                <button class="tab-nav-button" onclick="showTab('schema')">
+                    <span class="tab-icon">📋</span>
+                    <span class="tab-text">Schema Explorer</span>
+                </button>
+                <button class="tab-nav-button" onclick="showTab('about')">
+                    <span class="tab-icon">ℹ️</span>
+                    <span class="tab-text">About</span>
+                </button>
+            </div>
 
-                <button class="sim-button oltp-denormalized" onclick="runSimulation('oltp', 'denormalized')">
-                    <span class="button-icon">🍟</span>
-                    <span class="button-text">
-                        <strong>Transactional</strong><br>
-                        <small>Denormalized</small><br>
-                        <em>Write-heavy</em>
-                    </span>
-                </button>
+            <!-- Tab Content Sections -->
+            <div class="tab-content">
 
-                <button class="sim-button olap-normalized" onclick="runSimulation('olap', 'normalized')">
-                    <span class="button-icon">🥤</span>
-                    <span class="button-text">
-                        <strong>Analytical</strong><br>
-                        <small>Normalized</small><br>
-                        <em>Read-heavy</em>
-                    </span>
-                </button>
+                <!-- Overview Tab -->
+                <div class="tab-panel active" id="overview">
+                    <div class="welcome-section">
+                        <h2>Welcome to Database Normalization Simulator</h2>
+                        <p class="welcome-text">
+                            This interactive tool demonstrates the performance differences between normalized and denormalized
+                            database schemas using a fast food chain ordering scenario. Perfect for understanding database
+                            design principles in educational settings.
+                        </p>
 
-                <button class="sim-button olap-denormalized" onclick="runSimulation('olap', 'denormalized')">
-                    <span class="button-icon">🍕</span>
-                    <span class="button-text">
-                        <strong>Analytical</strong><br>
-                        <small>Denormalized</small><br>
-                        <em>Read-heavy</em>
-                    </span>
-                </button>
+                        <div class="quick-stats">
+                            <div class="stat-card">
+                                <div class="stat-number">80+</div>
+                                <div class="stat-label">Sample Orders</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">4</div>
+                                <div class="stat-label">Store Locations</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">2</div>
+                                <div class="stat-label">Schema Types</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">OLTP/OLAP</div>
+                                <div class="stat-label">Workload Modes</div>
+                            </div>
+                        </div>
 
-                <button class="sim-button view-tables" onclick="showTablesModal()">
-                    <span class="button-icon">📋</span>
-                    <span class="button-text">
-                        <strong>View Tables</strong><br>
-                        <small>& Data</small><br>
-                        <em>Schema Explorer</em>
-                    </span>
-                </button>
+                        <div class="getting-started">
+                            <h3>🚀 Getting Started</h3>
+                            <p>Choose a section above to explore different aspects of the simulation:</p>
+                            <ul class="feature-list">
+                                <li><strong>Data & APIs:</strong> Run simulations and view performance comparisons</li>
+                                <li><strong>Analytics:</strong> Explore query results and performance metrics</li>
+                                <li><strong>Schema Explorer:</strong> Examine database structure and sample data</li>
+                                <li><strong>About:</strong> Learn about database design principles</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data & APIs Tab -->
+                <div class="tab-panel" id="data">
+                    <div class="simulation-section">
+                        <h2>Database Performance Simulations</h2>
+                        <p class="section-description">
+                            Run interactive simulations to compare normalized vs denormalized database performance
+                            under different workload conditions.
+                        </p>
+
+                        <div class="simulation-controls">
+                            <div class="workload-category">
+                                <h3>📝 Transactional Workloads (OLTP)</h3>
+                                <p class="category-description">Write-heavy operations typical of order processing systems</p>
+                                <div class="simulation-buttons">
+                                    <button class="sim-button oltp-normalized" onclick="runSimulation('oltp', 'normalized')">
+                                        <span class="button-icon">🍔</span>
+                                        <span class="button-text">
+                                            <strong>Transactional</strong><br>
+                                            <small>Normalized Schema</small><br>
+                                            <em>Write-heavy</em>
+                                        </span>
+                                    </button>
+
+                                    <button class="sim-button oltp-denormalized" onclick="runSimulation('oltp', 'denormalized')">
+                                        <span class="button-icon">🍟</span>
+                                        <span class="button-text">
+                                            <strong>Transactional</strong><br>
+                                            <small>Denormalized Schema</small><br>
+                                            <em>Write-heavy</em>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="workload-category">
+                                <h3>📊 Analytical Workloads (OLAP)</h3>
+                                <p class="category-description">Read-heavy operations typical of reporting and analytics</p>
+                                <div class="simulation-buttons">
+                                    <button class="sim-button olap-normalized" onclick="runSimulation('olap', 'normalized')">
+                                        <span class="button-icon">🥤</span>
+                                        <span class="button-text">
+                                            <strong>Analytical</strong><br>
+                                            <small>Normalized Schema</small><br>
+                                            <em>Read-heavy</em>
+                                        </span>
+                                    </button>
+
+                                    <button class="sim-button olap-denormalized" onclick="runSimulation('olap', 'denormalized')">
+                                        <span class="button-icon">🍕</span>
+                                        <span class="button-text">
+                                            <strong>Analytical</strong><br>
+                                            <small>Denormalized Schema</small><br>
+                                            <em>Read-heavy</em>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div class="tab-panel" id="analytics">
+                    <div class="analytics-section">
+                        <h2>Performance Analytics Dashboard</h2>
+                        <p class="section-description">
+                            View detailed analytics and performance comparisons from previous simulation runs.
+                        </p>
+
+                        <div class="analytics-placeholder">
+                            <div class="placeholder-content">
+                                <span class="placeholder-icon">📈</span>
+                                <h3>Run Simulations to View Analytics</h3>
+                                <p>Use the "Data & APIs" tab to run simulations and generate performance analytics.</p>
+                                <button class="cta-button" onclick="showTab('data')">Go to Simulations</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schema Explorer Tab -->
+                <div class="tab-panel" id="schema">
+                    <div class="schema-section">
+                        <h2>Database Schema Explorer</h2>
+                        <p class="section-description">
+                            Explore the structure and relationships of both normalized and denormalized database schemas.
+                        </p>
+
+                        <div class="schema-actions">
+                            <button class="action-button primary" onclick="showTablesModal()">
+                                <span class="action-icon">🔍</span>
+                                <span>Explore Schema Details</span>
+                            </button>
+                            <button class="action-button secondary" onclick="showTab('about')">
+                                <span class="action-icon">📚</span>
+                                <span>Learn About Schemas</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Tab -->
+                <div class="tab-panel" id="about">
+                    <div class="about-section">
+                        <h2>About Database Normalization</h2>
+                        <p class="section-description">
+                            Learn about database design principles and the trade-offs between different schema approaches.
+                        </p>
+
+                        <div class="education-cards">
+                            <div class="education-card">
+                                <h3>🗄️ Database Normalization</h3>
+                                <p>Process of organizing data to minimize redundancy and improve data integrity through normal forms (1NF, 2NF, 3NF, BCNF).</p>
+                                <div class="pros-cons">
+                                    <div class="pros">
+                                        <strong>Advantages:</strong>
+                                        <ul>
+                                            <li>Eliminates data redundancy</li>
+                                            <li>Improves data consistency</li>
+                                            <li>Better ACID compliance</li>
+                                            <li>Easier to maintain and update</li>
+                                        </ul>
+                                    </div>
+                                    <div class="cons">
+                                        <strong>Considerations:</strong>
+                                        <ul>
+                                            <li>Complex queries with JOINs</li>
+                                            <li>Potentially slower reads</li>
+                                            <li>More tables to manage</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="education-card">
+                                <h3>⚡ Database Denormalization</h3>
+                                <p>Process of combining tables to improve read performance by adding redundant data and reducing the need for JOINs.</p>
+                                <div class="pros-cons">
+                                    <div class="pros">
+                                        <strong>Advantages:</strong>
+                                        <ul>
+                                            <li>Faster query performance</li>
+                                            <li>Simplified query structure</li>
+                                            <li>Better for read-heavy workloads</li>
+                                            <li>Reduced query complexity</li>
+                                        </ul>
+                                    </div>
+                                    <div class="cons">
+                                        <strong>Considerations:</strong>
+                                        <ul>
+                                            <li>Data redundancy</li>
+                                            <li>Update anomalies</li>
+                                            <li>Larger storage requirements</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
 
