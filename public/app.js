@@ -87,30 +87,45 @@ class DatabaseSimulator {
         this.showLoading(true);
         this.showResults(false);
 
+        // Add timeout for simulation
+        const simulationTimeout = setTimeout(() => {
+            this.showLoading(false);
+            this.displayError('Simulation timed out. Please try again.');
+        }, 30000); // 30 second timeout
+
         try {
             let normalizedResult, denormalizedResult;
 
             if (workloadType === 'oltp') {
-                // OLTP: Place Order Simulation
+                // OLTP: Place Order Simulation with enhanced feedback
+                this.showLoadingMessage('Generating order data...');
                 const orderData = this.generateRandomOrder();
+
+                this.showLoadingMessage('Executing normalized OLTP operation...');
                 [normalizedResult, denormalizedResult] = await Promise.all([
                     this.simulateOLTPNormalized(orderData),
                     this.simulateOLTPDenormalized(orderData)
                 ]);
             } else {
-                // OLAP: Analytics Query Simulation
+                // OLAP: Analytics Query Simulation with enhanced feedback
+                this.showLoadingMessage('Executing analytical queries...');
                 [normalizedResult, denormalizedResult] = await Promise.all([
                     this.simulateOLAPNormalized(),
                     this.simulateOLAPDenormalized()
                 ]);
             }
 
+            clearTimeout(simulationTimeout);
             this.displayResults(workloadType, schemaType, normalizedResult, denormalizedResult);
             this.createPerformanceChart(normalizedResult, denormalizedResult);
 
+            // Show success feedback
+            this.showSuccessMessage(`Simulation completed successfully! Processed ${workloadType.toUpperCase()} operations in ${schemaType} schema.`);
+
         } catch (error) {
+            clearTimeout(simulationTimeout);
             console.error('Simulation error:', error);
-            this.displayError('Simulation failed. Please check the console for details.');
+            this.displayError(`Simulation failed: ${error.message || 'Unknown error occurred'}`);
         } finally {
             this.showLoading(false);
             this.showResults(true);
@@ -151,27 +166,38 @@ class DatabaseSimulator {
     }
 
     async simulateOLTPNormalized(orderData) {
-        const response = await fetch('/api/oltp/normalized/place-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                customerId: orderData.customerId,
-                storeId: orderData.storeId,
-                employeeId: orderData.employeeId,
-                items: orderData.items
-            })
-        });
+        try {
+            const response = await fetch('/api/oltp/normalized/place-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: orderData.customerId,
+                    storeId: orderData.storeId,
+                    employeeId: orderData.employeeId,
+                    items: orderData.items
+                })
+            });
 
-        const result = await response.json();
-        return {
-            executionTime: result.executionTime,
-            data: result,
-            schemaInfo: {
-                structure: 'Normalized (3NF)',
-                tables: 'customers, stores, employees, menu_items, orders, order_items',
-                query: 'Multiple INSERT statements with JOINs and transactions'
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`);
             }
-        };
+
+            return {
+                executionTime: result.executionTime,
+                data: result,
+                schemaInfo: {
+                    structure: 'Normalized (3NF)',
+                    tables: 'customers, stores, employees, menu_items, orders, order_items',
+                    query: 'Multiple INSERT statements with JOINs and transactions',
+                    recordCount: result.orderId ? 1 : 0
+                }
+            };
+        } catch (error) {
+            console.error('OLTP Normalized simulation error:', error);
+            throw error;
+        }
     }
 
     async simulateOLTPDenormalized(orderData) {
@@ -403,29 +429,97 @@ class DatabaseSimulator {
     showLoading(show) {
         const loadingElement = document.getElementById('loading');
         if (show) {
-            loadingElement.style.display = 'block';
+            loadingElement.style.display = 'flex';
         } else {
             loadingElement.style.display = 'none';
         }
+    }
+
+    showLoadingMessage(message) {
+        const loadingText = document.querySelector('#loading p');
+        if (loadingText) {
+            loadingText.textContent = message;
+        }
+    }
+
+    showSuccessMessage(message) {
+        // Create temporary success notification
+        const notification = document.createElement('div');
+        notification.className = 'success-notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">✅</span>
+                <span class="notification-message">${message}</span>
+            </div>
+        `;
+
+        // Add styles for notification
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--success-green), var(--success-green-light));
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            z-index: 3000;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 400px;
+            font-weight: 500;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Remove notification after 4 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 4000);
     }
 
     showResults(show) {
         const resultsElement = document.getElementById('resultsSection');
         if (show) {
             resultsElement.style.display = 'block';
+            // Smooth scroll to results
+            resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             resultsElement.style.display = 'none';
         }
     }
 
     displayError(message) {
-        // Create a simple error display
+        // Create enhanced error display with retry option
         const resultsSection = document.getElementById('resultsSection');
         resultsSection.innerHTML = `
-            <h2>Error</h2>
-            <div class="error">${message}</div>
+            <div class="error-container">
+                <div class="error-header">
+                    <span class="error-icon">⚠️</span>
+                    <h2>Simulation Error</h2>
+                </div>
+                <div class="error-message">${message}</div>
+                <div class="error-actions">
+                    <button class="retry-button" onclick="window.location.reload()">
+                        <span>🔄</span>
+                        Retry Simulation
+                    </button>
+                    <button class="help-button" onclick="showTab('about')">
+                        <span>📖</span>
+                        Get Help
+                    </button>
+                </div>
+                <div class="error-details">
+                    <small>If the problem persists, please check your internet connection and try again.</small>
+                </div>
+            </div>
         `;
         resultsSection.style.display = 'block';
+
+        // Scroll to error
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // Modal functionality
