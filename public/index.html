@@ -146,6 +146,132 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Simulation Results Section (Data & APIs tab only) -->
+                    <div class="results-section" id="dataResultsSection" style="display: none;">
+                        <h2>Simulation Results</h2>
+
+                        <!-- Performance Metrics -->
+                        <div class="metrics-container">
+                            <div class="metric-card">
+                                <h3>Execution Time</h3>
+                                <div class="metric-comparison">
+                                    <div class="metric-item normalized">
+                                        <span class="label">Normalized:</span>
+                                        <span class="value" id="dataNormalizedTime">-</span>
+                                    </div>
+                                    <div class="metric-item denormalized">
+                                        <span class="label">Denormalized:</span>
+                                        <span class="value" id="dataDenormalizedTime">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <h3>Performance Difference</h3>
+                                <div class="performance-diff" id="dataPerformanceDiff">
+                                    <!-- Will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schema Comparison -->
+                        <div class="schema-comparison">
+                            <div class="schema-panel">
+                                <h3>Normalized Schema</h3>
+                                <div class="schema-info">
+                                    <p><strong>Structure:</strong> <span id="dataNormalizedStructure">-</span></p>
+                                    <p><strong>Tables:</strong> <span id="dataNormalizedTables">-</span></p>
+                                    <p><strong>Query:</strong> <span id="dataNormalizedQuery">-</span></p>
+                                </div>
+                                <div class="results-container">
+                                    <h4>Results</h4>
+                                    <div class="results-table" id="dataNormalizedResults">
+                                        <!-- Will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="schema-panel">
+                                <h3>Denormalized Schema</h3>
+                                <div class="schema-info">
+                                    <p><strong>Structure:</strong> <span id="dataDenormalizedStructure">-</span></p>
+                                    <p><strong>Tables:</strong> <span id="dataDenormalizedTables">-</span></p>
+                                    <p><strong>Query:</strong> <span id="dataDenormalizedQuery">-</span></p>
+                                </div>
+                                <div class="results-container">
+                                    <h4>Results</h4>
+                                    <div class="results-table" id="dataDenormalizedResults">
+                                        <!-- Will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Visualization -->
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Performance Comparison</h3>
+                                <div class="chart-legend">
+                                    <div class="legend-item">
+                                        <span class="legend-color normalized"></span>
+                                        <span class="legend-text">Normalized Schema</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-color denormalized"></span>
+                                        <span class="legend-text">Denormalized Schema</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="dataPerformanceChart" width="800" height="400"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Educational Summary -->
+                        <div class="educational-summary">
+                            <h3>📚 Key Takeaways</h3>
+                            <div class="summary-grid">
+                                <div class="summary-card normalized">
+                                    <h4>✅ Normalized Schema Advantages</h4>
+                                    <ul>
+                                        <li><strong>Data Integrity:</strong> Eliminates data redundancy and anomalies</li>
+                                        <li><strong>ACID Compliance:</strong> Better support for transactions</li>
+                                        <li><strong>Storage Efficiency:</strong> Minimal data duplication</li>
+                                        <li><strong>Update Flexibility:</strong> Single point of truth for modifications</li>
+                                        <li><strong>Referential Integrity:</strong> Foreign key constraints ensure consistency</li>
+                                    </ul>
+                                </div>
+
+                                <div class="summary-card denormalized">
+                                    <h4>⚡ Denormalized Schema Advantages</h4>
+                                    <ul>
+                                        <li><strong>Query Performance:</strong> Faster reads with no JOINs required</li>
+                                        <li><strong>Simplified Queries:</strong> Direct access to all needed data</li>
+                                        <li><strong>Analytics Optimization:</strong> Pre-aggregated data for reporting</li>
+                                        <li><strong>Reduced Complexity:</strong> Fewer tables to manage</li>
+                                        <li><strong>Read-Heavy Optimization:</strong> Ideal for OLAP workloads</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="workload-analysis">
+                                <h4>🎯 Workload Recommendations</h4>
+                                <div class="workload-cards">
+                                    <div class="workload-card oltp">
+                                        <h5>OLTP (Transactional)</h5>
+                                        <p><strong>Best Choice:</strong> Normalized Schema</p>
+                                        <p>Frequent writes, updates, and deletes require data integrity and ACID properties.</p>
+                                    </div>
+                                    <div class="workload-card olap">
+                                        <h5>OLAP (Analytical)</h5>
+                                        <p><strong>Best Choice:</strong> Denormalized Schema</p>
+                                        <p>Complex analytical queries benefit from pre-joined data and faster reads.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Analytics Tab -->
@@ -274,131 +400,6 @@
             </div>
         </section>
 
-        <!-- Results Section -->
-        <section class="results-section" id="resultsSection" style="display: none;">
-            <h2>Simulation Results</h2>
-
-            <!-- Performance Metrics -->
-            <div class="metrics-container">
-                <div class="metric-card">
-                    <h3>Execution Time</h3>
-                    <div class="metric-comparison">
-                        <div class="metric-item normalized">
-                            <span class="label">Normalized:</span>
-                            <span class="value" id="normalizedTime">-</span>
-                        </div>
-                        <div class="metric-item denormalized">
-                            <span class="label">Denormalized:</span>
-                            <span class="value" id="denormalizedTime">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="metric-card">
-                    <h3>Performance Difference</h3>
-                    <div class="performance-diff" id="performanceDiff">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Schema Comparison -->
-            <div class="schema-comparison">
-                <div class="schema-panel">
-                    <h3>Normalized Schema</h3>
-                    <div class="schema-info">
-                        <p><strong>Structure:</strong> <span id="normalizedStructure">-</span></p>
-                        <p><strong>Tables:</strong> <span id="normalizedTables">-</span></p>
-                        <p><strong>Query:</strong> <span id="normalizedQuery">-</span></p>
-                    </div>
-                    <div class="results-container">
-                        <h4>Results</h4>
-                        <div class="results-table" id="normalizedResults">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="schema-panel">
-                    <h3>Denormalized Schema</h3>
-                    <div class="schema-info">
-                        <p><strong>Structure:</strong> <span id="denormalizedStructure">-</span></p>
-                        <p><strong>Tables:</strong> <span id="denormalizedTables">-</span></p>
-                        <p><strong>Query:</strong> <span id="denormalizedQuery">-</span></p>
-                    </div>
-                    <div class="results-container">
-                        <h4>Results</h4>
-                        <div class="results-table" id="denormalizedResults">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart Visualization -->
-            <div class="chart-container">
-                <div class="chart-header">
-                    <h3>Performance Comparison</h3>
-                    <div class="chart-legend">
-                        <div class="legend-item">
-                            <span class="legend-color normalized"></span>
-                            <span class="legend-text">Normalized Schema</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color denormalized"></span>
-                            <span class="legend-text">Denormalized Schema</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="performanceChart" width="800" height="400"></canvas>
-                </div>
-            </div>
-
-            <!-- Educational Summary -->
-            <div class="educational-summary">
-                <h3>📚 Key Takeaways</h3>
-                <div class="summary-grid">
-                    <div class="summary-card normalized">
-                        <h4>✅ Normalized Schema Advantages</h4>
-                        <ul>
-                            <li><strong>Data Integrity:</strong> Eliminates data redundancy and anomalies</li>
-                            <li><strong>ACID Compliance:</strong> Better support for transactions</li>
-                            <li><strong>Storage Efficiency:</strong> Minimal data duplication</li>
-                            <li><strong>Update Flexibility:</strong> Single point of truth for modifications</li>
-                            <li><strong>Referential Integrity:</strong> Foreign key constraints ensure consistency</li>
-                        </ul>
-                    </div>
-
-                    <div class="summary-card denormalized">
-                        <h4>⚡ Denormalized Schema Advantages</h4>
-                        <ul>
-                            <li><strong>Query Performance:</strong> Faster reads with no JOINs required</li>
-                            <li><strong>Simplified Queries:</strong> Direct access to all needed data</li>
-                            <li><strong>Analytics Optimization:</strong> Pre-aggregated data for reporting</li>
-                            <li><strong>Reduced Complexity:</strong> Fewer tables to manage</li>
-                            <li><strong>Read-Heavy Optimization:</strong> Ideal for OLAP workloads</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="workload-analysis">
-                    <h4>🎯 Workload Recommendations</h4>
-                    <div class="workload-cards">
-                        <div class="workload-card oltp">
-                            <h5>OLTP (Transactional)</h5>
-                            <p><strong>Best Choice:</strong> Normalized Schema</p>
-                            <p>Frequent writes, updates, and deletes require data integrity and ACID properties.</p>
-                        </div>
-                        <div class="workload-card olap">
-                            <h5>OLAP (Analytical)</h5>
-                            <p><strong>Best Choice:</strong> Denormalized Schema</p>
-                            <p>Complex analytical queries benefit from pre-joined data and faster reads.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- Loading Indicator -->
         <div class="loading" id="loading" style="display: none;">

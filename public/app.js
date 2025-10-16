@@ -489,15 +489,15 @@ class DatabaseSimulator {
     }
 
     displayResults(workloadType, schemaType, normalizedResult, denormalizedResult) {
-        // Update performance metrics
-        document.getElementById('normalizedTime').textContent = `${normalizedResult.executionTime}ms`;
-        document.getElementById('denormalizedTime').textContent = `${denormalizedResult.executionTime}ms`;
+        // Update performance metrics with data tab specific IDs
+        document.getElementById('dataNormalizedTime').textContent = `${normalizedResult.executionTime}ms`;
+        document.getElementById('dataDenormalizedTime').textContent = `${denormalizedResult.executionTime}ms`;
 
         // Calculate and display performance difference
         const timeDiff = normalizedResult.executionTime - denormalizedResult.executionTime;
         const percentDiff = ((timeDiff / normalizedResult.executionTime) * 100).toFixed(1);
 
-        const diffElement = document.getElementById('performanceDiff');
+        const diffElement = document.getElementById('dataPerformanceDiff');
         if (timeDiff > 0) {
             diffElement.innerHTML = `
                 <span class="faster">Denormalized is ${percentDiff}% faster</span>
@@ -514,17 +514,17 @@ class DatabaseSimulator {
         const normalizedInfo = this.getSchemaInfo(workloadType, 'normalized');
         const denormalizedInfo = this.getSchemaInfo(workloadType, 'denormalized');
 
-        document.getElementById('normalizedStructure').textContent = normalizedInfo.structure;
-        document.getElementById('normalizedTables').textContent = normalizedInfo.tables;
-        document.getElementById('normalizedQuery').textContent = normalizedInfo.query;
+        document.getElementById('dataNormalizedStructure').textContent = normalizedInfo.structure;
+        document.getElementById('dataNormalizedTables').textContent = normalizedInfo.tables;
+        document.getElementById('dataNormalizedQuery').textContent = normalizedInfo.query;
 
-        document.getElementById('denormalizedStructure').textContent = denormalizedInfo.structure;
-        document.getElementById('denormalizedTables').textContent = denormalizedInfo.tables;
-        document.getElementById('denormalizedQuery').textContent = denormalizedInfo.query;
+        document.getElementById('dataDenormalizedStructure').textContent = denormalizedInfo.structure;
+        document.getElementById('dataDenormalizedTables').textContent = denormalizedInfo.tables;
+        document.getElementById('dataDenormalizedQuery').textContent = denormalizedInfo.query;
 
         // Display results data with improved table layout
-        this.displayResultsTable('normalizedResults', normalizedResult.data, 'normalized');
-        this.displayResultsTable('denormalizedResults', denormalizedResult.data, 'denormalized');
+        this.displayResultsTable('dataNormalizedResults', normalizedResult.data, 'normalized');
+        this.displayResultsTable('dataDenormalizedResults', denormalizedResult.data, 'denormalized');
     }
 
     getSchemaInfo(workloadType, schemaType) {
@@ -655,7 +655,7 @@ class DatabaseSimulator {
     }
 
     createPerformanceChart(normalizedResult, denormalizedResult) {
-        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const ctx = document.getElementById('dataPerformanceChart').getContext('2d');
 
         // Destroy existing chart if it exists
         if (this.performanceChart) {
@@ -816,10 +816,15 @@ class DatabaseSimulator {
     }
 
     showResults(show) {
-        const resultsElement = document.getElementById('resultsSection');
+        // Only show results within the Data & APIs tab
+        if (this.currentTab !== 'data') {
+            return;
+        }
+
+        const resultsElement = document.getElementById('dataResultsSection');
         if (show) {
             resultsElement.style.display = 'block';
-            // Smooth scroll to results
+            // Smooth scroll to results within the tab
             resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             resultsElement.style.display = 'none';
@@ -827,8 +832,13 @@ class DatabaseSimulator {
     }
 
     displayError(message) {
+        // Only show error within the Data & APIs tab
+        if (this.currentTab !== 'data') {
+            return;
+        }
+
         // Create enhanced error display with retry option
-        const resultsSection = document.getElementById('resultsSection');
+        const resultsSection = document.getElementById('dataResultsSection');
         resultsSection.innerHTML = `
             <div class="error-container">
                 <div class="error-header">
@@ -853,7 +863,7 @@ class DatabaseSimulator {
         `;
         resultsSection.style.display = 'block';
 
-        // Scroll to error
+        // Scroll to error within the tab
         resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
