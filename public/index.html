@@ -97,52 +97,59 @@
                             under different workload conditions.
                         </p>
 
-                        <div class="simulation-controls">
-                            <div class="workload-category">
-                                <h3>📝 Transactional Workloads (OLTP)</h3>
-                                <p class="category-description">Write-heavy operations typical of order processing systems</p>
-                                <div class="simulation-buttons">
-                                    <button class="sim-button oltp-normalized" onclick="runSimulation('oltp', 'normalized')">
-                                        <span class="button-icon">🍔</span>
-                                        <span class="button-text">
-                                            <strong>Transactional</strong><br>
-                                            <small>Normalized Schema</small><br>
-                                            <em>Write-heavy</em>
-                                        </span>
-                                    </button>
+                        <div class="unified-simulation-section">
+                            <h3>🚀 Database Performance Simulations</h3>
+                            <p class="section-description">
+                                Compare normalized and denormalized database performance across different workload types.
+                            </p>
 
-                                    <button class="sim-button oltp-denormalized" onclick="runSimulation('oltp', 'denormalized')">
-                                        <span class="button-icon">🍟</span>
-                                        <span class="button-text">
-                                            <strong>Transactional</strong><br>
-                                            <small>Denormalized Schema</small><br>
-                                            <em>Write-heavy</em>
-                                        </span>
-                                    </button>
+                            <div class="simulation-grid">
+                                <!-- OLTP Section -->
+                                <div class="workload-section">
+                                    <div class="workload-header">
+                                        <h4>📝 Transactional (OLTP)</h4>
+                                        <p class="workload-subtitle">Write-heavy operations</p>
+                                    </div>
+                                    <div class="schema-comparison">
+                                        <button class="sim-button normalized" onclick="runSimulation('oltp', 'normalized')">
+                                            <span class="button-icon">🏗️</span>
+                                            <span class="button-text">
+                                                <strong>Normalized</strong><br>
+                                                <small>3NF Schema</small>
+                                            </span>
+                                        </button>
+                                        <button class="sim-button denormalized" onclick="runSimulation('oltp', 'denormalized')">
+                                            <span class="button-icon">⚡</span>
+                                            <span class="button-text">
+                                                <strong>Denormalized</strong><br>
+                                                <small>Flat Schema</small>
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="workload-category">
-                                <h3>📊 Analytical Workloads (OLAP)</h3>
-                                <p class="category-description">Read-heavy operations typical of reporting and analytics</p>
-                                <div class="simulation-buttons">
-                                    <button class="sim-button olap-normalized" onclick="runSimulation('olap', 'normalized')">
-                                        <span class="button-icon">🥤</span>
-                                        <span class="button-text">
-                                            <strong>Analytical</strong><br>
-                                            <small>Normalized Schema</small><br>
-                                            <em>Read-heavy</em>
-                                        </span>
-                                    </button>
-
-                                    <button class="sim-button olap-denormalized" onclick="runSimulation('olap', 'denormalized')">
-                                        <span class="button-icon">🍕</span>
-                                        <span class="button-text">
-                                            <strong>Analytical</strong><br>
-                                            <small>Denormalized Schema</small><br>
-                                            <em>Read-heavy</em>
-                                        </span>
-                                    </button>
+                                <!-- OLAP Section -->
+                                <div class="workload-section">
+                                    <div class="workload-header">
+                                        <h4>📊 Analytical (OLAP)</h4>
+                                        <p class="workload-subtitle">Read-heavy operations</p>
+                                    </div>
+                                    <div class="schema-comparison">
+                                        <button class="sim-button normalized" onclick="runSimulation('olap', 'normalized')">
+                                            <span class="button-icon">🏗️</span>
+                                            <span class="button-text">
+                                                <strong>Normalized</strong><br>
+                                                <small>3NF Schema</small>
+                                            </span>
+                                        </button>
+                                        <button class="sim-button denormalized" onclick="runSimulation('olap', 'denormalized')">
+                                            <span class="button-icon">⚡</span>
+                                            <span class="button-text">
+                                                <strong>Denormalized</strong><br>
+                                                <small>Flat Schema</small>
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -164,6 +171,11 @@
                                 <p>Use the "Data & APIs" tab to run simulations and generate performance analytics.</p>
                                 <button class="cta-button" onclick="showTab('data')">Go to Simulations</button>
                             </div>
+                        </div>
+
+                        <!-- Analytics Results Container (populated dynamically) -->
+                        <div class="analytics-content" style="display: none;">
+                            <!-- Content populated by JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -315,8 +327,22 @@
 
             <!-- Chart Visualization -->
             <div class="chart-container">
-                <h3>Performance Comparison</h3>
-                <canvas id="performanceChart" width="800" height="400"></canvas>
+                <div class="chart-header">
+                    <h3>Performance Comparison</h3>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color normalized"></span>
+                            <span class="legend-text">Normalized Schema</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color denormalized"></span>
+                            <span class="legend-text">Denormalized Schema</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="performanceChart" width="800" height="400"></canvas>
+                </div>
             </div>
 
             <!-- Educational Summary -->

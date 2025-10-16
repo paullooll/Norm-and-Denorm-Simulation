@@ -6,6 +6,8 @@ class DatabaseSimulator {
         this.tablesModal = null;
         this.currentSchema = 'normalized';
         this.currentTab = 'overview';
+        this.simulationResults = null; // Store simulation results for Analytics tab
+        this.hasSimulationRun = false; // Track if simulation has been executed
         this.initializeEventListeners();
         this.loadSampleData();
         this.loadTableSchemas();
@@ -59,15 +61,201 @@ class DatabaseSimulator {
         this.currentTab = tabName;
 
         // Trigger specific actions for certain tabs
-        if (tabName === 'analytics' && this.performanceChart) {
-            // Refresh analytics if chart exists
-            this.refreshAnalytics();
+        if (tabName === 'analytics') {
+            this.updateAnalyticsTab();
         }
     }
 
-    refreshAnalytics() {
-        // This could be used to refresh analytics data if needed
-        console.log('Analytics tab activated');
+    updateAnalyticsTab() {
+        const analyticsPlaceholder = document.querySelector('.analytics-placeholder');
+
+        if (this.hasSimulationRun && this.simulationResults) {
+            // Hide placeholder and show actual results
+            if (analyticsPlaceholder) {
+                analyticsPlaceholder.style.display = 'none';
+            }
+
+            // Update analytics content with real data
+            this.displayAnalyticsResults();
+        } else {
+            // Show placeholder if no simulation has run
+            if (analyticsPlaceholder) {
+                analyticsPlaceholder.style.display = 'flex';
+            }
+        }
+    }
+
+    displayAnalyticsResults() {
+        if (!this.simulationResults) return;
+
+        const { workloadType, schemaType, normalizedResult, denormalizedResult } = this.simulationResults;
+
+        // Update analytics section with real data
+        const analyticsSection = document.querySelector('.analytics-section');
+        if (analyticsSection) {
+            analyticsSection.innerHTML = `
+                <h2>Performance Analytics Dashboard</h2>
+                <p class="section-description">
+                    Real-time analytics and performance comparisons from your latest simulation run.
+                </p>
+
+                <div class="analytics-content">
+                    <div class="simulation-summary">
+                        <h3>Latest Simulation Results</h3>
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <strong>Workload Type:</strong> ${workloadType.toUpperCase()}
+                            </div>
+                            <div class="summary-card">
+                                <strong>Tested Schema:</strong> ${schemaType.charAt(0).toUpperCase() + schemaType.slice(1)}
+                            </div>
+                            <div class="summary-card">
+                                <strong>Execution Time:</strong> ${normalizedResult.executionTime}ms / ${denormalizedResult.executionTime}ms
+                            </div>
+                            <div class="summary-card">
+                                <strong>Performance Diff:</strong> ${this.calculatePerformanceDiff(normalizedResult, denormalizedResult)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-preview">
+                        <h3>Schema Comparison Tables</h3>
+                        <div class="preview-tables">
+                            <div class="preview-table">
+                                <h4>Normalized Schema Results</h4>
+                                ${this.generatePreviewTable(normalizedResult.data)}
+                            </div>
+                            <div class="preview-table">
+                                <h4>Denormalized Schema Results</h4>
+                                ${this.generatePreviewTable(denormalizedResult.data)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-preview">
+                        <h3>Performance Visualization</h3>
+                        <div class="chart-container-mini">
+                            <canvas id="analyticsChart" width="600" height="300"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="analytics-actions">
+                        <button class="action-button primary" onclick="showTab('data')">
+                            <span>🔄</span>
+                            Run New Simulation
+                        </button>
+                        <button class="action-button secondary" onclick="window.simulator.createAnalyticsChart()">
+                            <span>📊</span>
+                            View Full Analytics
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Create analytics chart if it doesn't exist
+            if (!this.analyticsChart) {
+                this.createAnalyticsChart();
+            }
+        }
+    }
+
+    generatePreviewTable(data) {
+        if (!data || !data.data || data.data.length === 0) {
+            return '<div class="no-data">No data available</div>';
+        }
+
+        const headers = Object.keys(data.data[0]);
+        let html = '<div class="table-container"><table class="data-table">';
+
+        // Headers
+        html += '<thead><tr>';
+        headers.forEach(header => {
+            html += `<th>${this.formatHeaderName(header)}</th>`;
+        });
+        html += '</tr></thead>';
+
+        // Data rows (limit to 3 for preview)
+        html += '<tbody>';
+        data.data.slice(0, 3).forEach(row => {
+            html += '<tr>';
+            headers.forEach(header => {
+                html += `<td>${row[header] || 'N/A'}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+
+        if (data.data.length > 3) {
+            html += `<div class="table-footer">... and ${data.data.length - 3} more rows</div>`;
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    createAnalyticsChart() {
+        if (!this.simulationResults) return;
+
+        const { normalizedResult, denormalizedResult } = this.simulationResults;
+        const ctx = document.getElementById('analyticsChart')?.getContext('2d');
+
+        if (!ctx) return;
+
+        // Destroy existing chart if it exists
+        if (this.analyticsChart) {
+            this.analyticsChart.destroy();
+        }
+
+        this.analyticsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Normalized Schema', 'Denormalized Schema'],
+                datasets: [{
+                    label: 'Execution Time (ms)',
+                    data: [normalizedResult.executionTime, denormalizedResult.executionTime],
+                    backgroundColor: [
+                        'rgba(37, 99, 235, 0.8)',
+                        'rgba(16, 185, 129, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(37, 99, 235, 1)',
+                        'rgba(16, 185, 129, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Analytics Dashboard - Performance Comparison',
+                        font: { size: 14, weight: 'bold' },
+                        color: '#374151'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Execution Time (ms)' }
+                    }
+                }
+            }
+        });
+    }
+
+    calculatePerformanceDiff(normalizedResult, denormalizedResult) {
+        const timeDiff = normalizedResult.executionTime - denormalizedResult.executionTime;
+        const percentDiff = ((timeDiff / normalizedResult.executionTime) * 100).toFixed(1);
+
+        if (timeDiff > 0) {
+            return `Denormalized ${percentDiff}% faster`;
+        } else {
+            return `Normalized ${Math.abs(percentDiff)}% faster`;
+        }
     }
 
     async loadSampleData() {
@@ -116,8 +304,24 @@ class DatabaseSimulator {
             }
 
             clearTimeout(simulationTimeout);
+
+            // Store simulation results for Analytics tab
+            this.simulationResults = {
+                workloadType,
+                schemaType,
+                normalizedResult,
+                denormalizedResult,
+                timestamp: new Date().toISOString()
+            };
+            this.hasSimulationRun = true;
+
             this.displayResults(workloadType, schemaType, normalizedResult, denormalizedResult);
             this.createPerformanceChart(normalizedResult, denormalizedResult);
+
+            // Update Analytics tab if it's currently active
+            if (this.currentTab === 'analytics') {
+                this.updateAnalyticsTab();
+            }
 
             // Show success feedback
             this.showSuccessMessage(`Simulation completed successfully! Processed ${workloadType.toUpperCase()} operations in ${schemaType} schema.`);
@@ -300,21 +504,53 @@ class DatabaseSimulator {
             `;
         }
 
-        // Update schema information
-        document.getElementById('normalizedStructure').textContent = normalizedResult.schemaInfo.structure;
-        document.getElementById('normalizedTables').textContent = normalizedResult.schemaInfo.tables;
-        document.getElementById('normalizedQuery').textContent = normalizedResult.schemaInfo.query;
+        // Update schema information with enhanced details
+        const normalizedInfo = this.getSchemaInfo(workloadType, 'normalized');
+        const denormalizedInfo = this.getSchemaInfo(workloadType, 'denormalized');
 
-        document.getElementById('denormalizedStructure').textContent = denormalizedResult.schemaInfo.structure;
-        document.getElementById('denormalizedTables').textContent = denormalizedResult.schemaInfo.tables;
-        document.getElementById('denormalizedQuery').textContent = denormalizedResult.schemaInfo.query;
+        document.getElementById('normalizedStructure').textContent = normalizedInfo.structure;
+        document.getElementById('normalizedTables').textContent = normalizedInfo.tables;
+        document.getElementById('normalizedQuery').textContent = normalizedInfo.query;
 
-        // Display results data
-        this.displayResultsTable('normalizedResults', normalizedResult.data);
-        this.displayResultsTable('denormalizedResults', denormalizedResult.data);
+        document.getElementById('denormalizedStructure').textContent = denormalizedInfo.structure;
+        document.getElementById('denormalizedTables').textContent = denormalizedInfo.tables;
+        document.getElementById('denormalizedQuery').textContent = denormalizedInfo.query;
+
+        // Display results data with improved table layout
+        this.displayResultsTable('normalizedResults', normalizedResult.data, 'normalized');
+        this.displayResultsTable('denormalizedResults', denormalizedResult.data, 'denormalized');
     }
 
-    displayResultsTable(elementId, data) {
+    getSchemaInfo(workloadType, schemaType) {
+        const baseInfo = {
+            normalized: {
+                structure: 'Normalized (3NF)',
+                tables: 'customers, stores, employees, menu_items, orders, order_items',
+                query: 'Multiple table operations with JOINs and foreign key constraints'
+            },
+            denormalized: {
+                structure: 'Denormalized (Flat)',
+                tables: 'denormalized_orders (single table with redundant data)',
+                query: 'Single table operations with no JOINs required'
+            }
+        };
+
+        let info = baseInfo[schemaType];
+
+        if (workloadType === 'oltp') {
+            info.query = schemaType === 'normalized'
+                ? 'INSERT with multiple foreign key relationships and transactions'
+                : 'Single INSERT with all data in one table';
+        } else {
+            info.query = schemaType === 'normalized'
+                ? 'Complex JOIN queries with aggregations across multiple tables'
+                : 'Simple aggregation queries on single denormalized table';
+        }
+
+        return info;
+    }
+
+    displayResultsTable(elementId, data, schemaType = 'normalized') {
         const container = document.getElementById(elementId);
 
         if (data.success === false) {
@@ -329,7 +565,7 @@ class DatabaseSimulator {
                 return;
             }
 
-            const table = this.createTableFromData(data.data);
+            const table = this.createTableFromData(data.data, schemaType);
             container.innerHTML = table;
         } else if (data.orderId) {
             // OLTP results (single order)
@@ -345,29 +581,65 @@ class DatabaseSimulator {
         }
     }
 
-    createTableFromData(dataArray) {
+    createTableFromData(dataArray, schemaType = 'normalized') {
         if (!dataArray || dataArray.length === 0) return '';
 
         const headers = Object.keys(dataArray[0]);
+        const maxVisibleHeaders = 6; // Limit headers for better mobile display
 
-        let html = '<table class="data-table">';
+        // For mobile, show only essential columns
+        let displayHeaders = headers;
+        let displayData = dataArray;
+
+        if (window.innerWidth <= 768 && headers.length > maxVisibleHeaders) {
+            // Prioritize most important columns for mobile
+            const priorityColumns = this.getPriorityColumns(schemaType, headers);
+            displayHeaders = priorityColumns;
+            displayData = dataArray.map(row => {
+                const newRow = {};
+                priorityColumns.forEach(col => {
+                    newRow[col] = row[col];
+                });
+                return newRow;
+            });
+        }
+
+        let html = '<div class="table-responsive"><table class="data-table">';
         html += '<thead><tr>';
-        headers.forEach(header => {
+        displayHeaders.forEach(header => {
             html += `<th>${this.formatHeaderName(header)}</th>`;
         });
         html += '</tr></thead>';
 
         html += '<tbody>';
-        dataArray.forEach(row => {
+        displayData.slice(0, 5).forEach(row => { // Limit rows for better performance
             html += '<tr>';
-            headers.forEach(header => {
-                html += `<td>${row[header] || 'N/A'}</td>`;
+            displayHeaders.forEach(header => {
+                const value = row[header];
+                const displayValue = typeof value === 'number' && value > 999
+                    ? value.toLocaleString()
+                    : (value || 'N/A');
+                html += `<td title="${displayValue}">${displayValue}</td>`;
             });
             html += '</tr>';
         });
         html += '</tbody></table>';
 
+        if (dataArray.length > 5) {
+            html += `<div class="table-footer">Showing 5 of ${dataArray.length} rows</div>`;
+        }
+
+        html += '</div>';
         return html;
+    }
+
+    getPriorityColumns(schemaType, allHeaders) {
+        const priority = {
+            normalized: ['store_name', 'total_orders', 'total_revenue', 'avg_order_value', 'unique_customers'],
+            denormalized: ['store_name', 'total_orders', 'total_revenue', 'avg_order_value', 'unique_customers']
+        };
+
+        return priority[schemaType].filter(col => allHeaders.includes(col));
     }
 
     formatHeaderName(header) {
@@ -384,6 +656,9 @@ class DatabaseSimulator {
             this.performanceChart.destroy();
         }
 
+        const fasterSchema = normalizedResult.executionTime < denormalizedResult.executionTime ? 'Normalized' : 'Denormalized';
+        const slowerSchema = normalizedResult.executionTime > denormalizedResult.executionTime ? 'Normalized' : 'Denormalized';
+
         this.performanceChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -392,25 +667,48 @@ class DatabaseSimulator {
                     label: 'Execution Time (ms)',
                     data: [normalizedResult.executionTime, denormalizedResult.executionTime],
                     backgroundColor: [
-                        'rgba(75, 192, 192, 0.6)',
-                        'rgba(255, 99, 132, 0.6)'
+                        'rgba(37, 99, 235, 0.8)',
+                        'rgba(16, 185, 129, 0.8)'
                     ],
                     borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)'
+                        'rgba(37, 99, 235, 1)',
+                        'rgba(16, 185, 129, 1)'
                     ],
-                    borderWidth: 1
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Query Performance Comparison'
+                        text: `Performance Comparison (${fasterSchema} is faster)`,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        color: '#374151',
+                        padding: 20
                     },
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                        titleColor: '#f9fafb',
+                        bodyColor: '#f9fafb',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `Execution Time: ${context.parsed.y}ms`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -418,9 +716,40 @@ class DatabaseSimulator {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Execution Time (milliseconds)'
+                            text: 'Execution Time (milliseconds)',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            color: '#e5e7eb',
+                            borderColor: '#d1d5db'
+                        },
+                        ticks: {
+                            color: '#6b7280',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#6b7280',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
                         }
                     }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
                 }
             }
         });
