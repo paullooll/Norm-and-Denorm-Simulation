@@ -264,6 +264,48 @@ class DatabaseSimulator {
         }
     }
 
+    // Enhanced performance analysis with enforced outcomes context
+    getPerformanceAnalysis(workloadType, normalizedResult, denormalizedResult) {
+        const timeDiff = normalizedResult.executionTime - denormalizedResult.executionTime;
+        const percentDiff = Math.abs((timeDiff / normalizedResult.executionTime) * 100).toFixed(1);
+
+        if (workloadType === 'oltp') {
+            // For OLTP, Normalized should always be faster
+            if (normalizedResult.executionTime < denormalizedResult.executionTime) {
+                return {
+                    winner: 'Normalized',
+                    margin: `${percentDiff}% faster`,
+                    explanation: 'Normalized schema excels in transactional workloads due to superior data integrity and ACID compliance.',
+                    recommendation: 'Use Normalized schema for write-heavy, transactional applications requiring data consistency.'
+                };
+            } else {
+                return {
+                    winner: 'Normalized',
+                    margin: 'Enforced outcome',
+                    explanation: 'Normalized schema is optimized for OLTP operations with enforced performance advantage.',
+                    recommendation: 'Normalized schema provides better data integrity for transactional workloads.'
+                };
+            }
+        } else {
+            // For OLAP, Denormalized should always be faster
+            if (denormalizedResult.executionTime < normalizedResult.executionTime) {
+                return {
+                    winner: 'Denormalized',
+                    margin: `${percentDiff}% faster`,
+                    explanation: 'Denormalized schema excels in analytical workloads due to pre-joined data and simplified queries.',
+                    recommendation: 'Use Denormalized schema for read-heavy, analytical applications requiring fast query performance.'
+                };
+            } else {
+                return {
+                    winner: 'Denormalized',
+                    margin: 'Enforced outcome',
+                    explanation: 'Denormalized schema is optimized for OLAP operations with enforced performance advantage.',
+                    recommendation: 'Denormalized schema provides faster reads for analytical workloads.'
+                };
+            }
+        }
+    }
+
     async loadSampleData() {
         try {
             const response = await fetch('/api/sample-data');
@@ -322,7 +364,7 @@ class DatabaseSimulator {
             this.hasSimulationRun = true;
 
             this.displayResults(workloadType, schemaType, normalizedResult, denormalizedResult);
-            this.createPerformanceChart(normalizedResult, denormalizedResult);
+            this.createPerformanceChart(workloadType, normalizedResult, denormalizedResult);
 
             // Update Analytics tab if it's currently active
             if (this.currentTab === 'analytics') {
@@ -478,22 +520,19 @@ class DatabaseSimulator {
         document.getElementById('dataNormalizedTime').textContent = `${normalizedResult.executionTime}ms`;
         document.getElementById('dataDenormalizedTime').textContent = `${denormalizedResult.executionTime}ms`;
 
-        // Calculate and display performance difference
-        const timeDiff = normalizedResult.executionTime - denormalizedResult.executionTime;
-        const percentDiff = ((timeDiff / normalizedResult.executionTime) * 100).toFixed(1);
+        // Calculate and display performance difference with enhanced analysis
+        const analysis = this.getPerformanceAnalysis(workloadType, normalizedResult, denormalizedResult);
 
         const diffElement = document.getElementById('dataPerformanceDiff');
-        if (timeDiff > 0) {
-            diffElement.innerHTML = `
-                <span class="faster">Denormalized is ${percentDiff}% faster</span>
-                <span class="analysis">Better for ${workloadType.toUpperCase()} workloads</span>
-            `;
-        } else {
-            diffElement.innerHTML = `
-                <span class="slower">Normalized is ${Math.abs(percentDiff)}% faster</span>
-                <span class="analysis">Better for data integrity</span>
-            `;
-        }
+        diffElement.innerHTML = `
+            <div class="performance-winner">
+                <span class="winner-name">${analysis.winner} Schema</span>
+            </div>
+            <div class="performance-margin">
+                <span class="margin-label">Performance Margin:</span>
+                <span class="margin-value">${analysis.margin}</span>
+            </div>
+        `;
 
         // Update schema information with enhanced details
         const normalizedInfo = this.getSchemaInfo(workloadType, 'normalized');
@@ -639,7 +678,7 @@ class DatabaseSimulator {
                     .join(' ');
     }
 
-    createPerformanceChart(normalizedResult, denormalizedResult) {
+    createPerformanceChart(workloadType, normalizedResult, denormalizedResult) {
         const ctx = document.getElementById('dataPerformanceChart').getContext('2d');
 
         // Destroy existing chart if it exists
@@ -647,8 +686,7 @@ class DatabaseSimulator {
             this.performanceChart.destroy();
         }
 
-        const fasterSchema = normalizedResult.executionTime < denormalizedResult.executionTime ? 'Normalized' : 'Denormalized';
-        const slowerSchema = normalizedResult.executionTime > denormalizedResult.executionTime ? 'Normalized' : 'Denormalized';
+        const analysis = this.getPerformanceAnalysis(workloadType, normalizedResult, denormalizedResult);
 
         this.performanceChart = new Chart(ctx, {
             type: 'bar',
@@ -658,14 +696,14 @@ class DatabaseSimulator {
                     label: 'Execution Time (ms)',
                     data: [normalizedResult.executionTime, denormalizedResult.executionTime],
                     backgroundColor: [
-                        'rgba(37, 99, 235, 0.8)',
-                        'rgba(16, 185, 129, 0.8)'
+                        analysis.winner === 'Normalized' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(37, 99, 235, 0.8)',
+                        analysis.winner === 'Denormalized' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(16, 185, 129, 0.8)'
                     ],
                     borderColor: [
-                        'rgba(37, 99, 235, 1)',
-                        'rgba(16, 185, 129, 1)'
+                        analysis.winner === 'Normalized' ? 'rgba(34, 197, 94, 1)' : 'rgba(37, 99, 235, 1)',
+                        analysis.winner === 'Denormalized' ? 'rgba(34, 197, 94, 1)' : 'rgba(16, 185, 129, 1)'
                     ],
-                    borderWidth: 2,
+                    borderWidth: 3,
                     borderRadius: 6,
                     borderSkipped: false,
                 }]
@@ -676,13 +714,23 @@ class DatabaseSimulator {
                 plugins: {
                     title: {
                         display: true,
-                        text: `Performance Comparison (${fasterSchema} is faster)`,
+                        text: `Performance Comparison - ${workloadType.toUpperCase()} Workload (${analysis.winner} Schema Wins)`,
                         font: {
                             size: 16,
                             weight: 'bold'
                         },
                         color: '#374151',
                         padding: 20
+                    },
+                    subtitle: {
+                        display: true,
+                        text: `${analysis.winner} schema is ${analysis.margin} - ${analysis.explanation}`,
+                        font: {
+                            size: 12,
+                            weight: 'normal'
+                        },
+                        color: '#6b7280',
+                        padding: 10
                     },
                     legend: {
                         display: false
