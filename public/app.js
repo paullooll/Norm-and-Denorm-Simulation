@@ -415,34 +415,19 @@ class DatabaseSimulator {
             throw new Error('Sample data not available for denormalized simulation');
         }
 
-        const customer = this.sampleData.customers.find(c => c.id === orderData.customerId);
-        const store = this.sampleData.stores.find(s => s.id === orderData.storeId);
-        const employee = this.sampleData.employees.find(e => e.id === orderData.employeeId);
-
         const response = await fetch('/api/oltp/denormalized/place-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                customerData: {
-                    id: customer.id,
-                    firstName: customer.first_name,
-                    lastName: customer.last_name,
-                    email: customer.email,
-                    phone: customer.phone
-                },
-                storeData: {
-                    id: store.id,
-                    name: store.name,
-                    location: store.location,
-                    phone: store.phone
-                },
-                employeeData: {
-                    id: employee.id,
-                    firstName: employee.first_name,
-                    lastName: employee.last_name,
-                    position: employee.position
-                },
-                items: orderData.items
+                customer_id: orderData.customerId,
+                store_id: orderData.storeId,
+                employee_id: orderData.employeeId,
+                items: orderData.items.map(item => ({
+                    menu_item_id: item.menuItemId,
+                    quantity: item.quantity,
+                    price: item.unitPrice
+                })),
+                order_type: 'dine_in'
             })
         });
 

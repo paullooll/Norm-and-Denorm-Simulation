@@ -162,23 +162,64 @@ async function placeOrderNormalized(customerId, storeId, employeeId, items) {
 }
 
 // Place a new order (Denormalized)
-async function placeOrderDenormalized(customerData, storeData, employeeData, items) {
+async function placeOrderDenormalized(orderData) {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        // Calculate total amount
-        let totalAmount = 0;
-        for (const item of items) {
-            totalAmount += item.unitPrice * item.quantity;
+        // Get customer, store, and employee data from the database
+        const [customerResult, storeResult, employeeResult] = await Promise.all([
+            client.query('SELECT * FROM customers WHERE customer_id = $1', [orderData.customer_id]),
+            client.query('SELECT * FROM stores WHERE store_id = $1', [orderData.store_id]),
+            client.query('SELECT * FROM employees WHERE employee_id = $1', [orderData.employee_id])
+        ]);
+
+        const customer = customerResult.rows[0];
+        const store = storeResult.rows[0];
+        const employee = employeeResult.rows[0];
+
+        if (!customer || !store || !employee) {
+            throw new Error('Customer, store, or employee not found');
         }
 
-        // Insert into denormalized_orders (simplified - only first item for demo)
-        const firstItem = items[0];
+        // Calculate total amount and get first item details
+        let totalAmount = 0;
+        let firstItem = null;
+
+        for (const item of orderData.items) {
+            const menuResult = await client.query(
+                'SELECT * FROM menu_items WHERE menu_item_id = $1',
+                [item.menu_item_id]
+            );
+            const menuItem = menuResult.rows[0];
+
+            if (!menuItem) {
+                throw new Error(`Menu item ${item.menu_item_id} not found`);
+            }
+
+            if (!firstItem) {
+                firstItem = {
+                    menuItemId: menuItem.menu_item_id,
+                    name: menuItem.item_name,
+                    category: menuItem.category,
+                    unitPrice: menuItem.price,
+                    quantity: item.quantity,
+                    subtotal: menuItem.price * item.quantity
+                };
+            }
+
+            totalAmount += menuItem.price * item.quantity;
+        }
+
+        if (!firstItem) {
+            throw new Error('No valid items in order');
+        }
+
+        // Insert into denormalized_orders
         const orderDate = new Date();
 
-        await client.query(
+        const insertResult = await client.query(
             `INSERT INTO denormalized_orders (
                 order_date, total_amount, order_type, status,
                 customer_id, customer_first_name, customer_last_name, customer_email, customer_phone,
@@ -186,12 +227,12 @@ async function placeOrderDenormalized(customerData, storeData, employeeData, ite
                 employee_id, employee_first_name, employee_last_name, employee_position,
                 menu_item_id, item_name, category, unit_price, quantity, subtotal,
                 order_month, order_day, order_hour
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)`,
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING order_id`,
             [
-                orderDate, totalAmount, 'dine_in', 'pending',
-                customerData.id, customerData.firstName, customerData.lastName, customerData.email, customerData.phone,
-                storeData.id, storeData.name, storeData.location, storeData.phone,
-                employeeData.id, employeeData.firstName, employeeData.lastName, employeeData.position,
+                orderDate, totalAmount, orderData.order_type || 'dine_in', 'pending',
+                customer.customer_id, customer.first_name, customer.last_name, customer.email, customer.phone,
+                store.store_id, store.store_name, store.location, store.phone,
+                employee.employee_id, employee.first_name, employee.last_name, employee.position,
                 firstItem.menuItemId, firstItem.name, firstItem.category, firstItem.unitPrice, firstItem.quantity, firstItem.subtotal,
                 parseInt(orderDate.getFullYear() + String(orderDate.getMonth() + 1).padStart(2, '0')),
                 orderDate.toISOString().split('T')[0],
@@ -199,10 +240,11 @@ async function placeOrderDenormalized(customerData, storeData, employeeData, ite
             ]
         );
 
+        const orderId = insertResult.rows[0].order_id;
+
         await client.query('COMMIT');
-        // Generate a mock orderId for consistency with normalized response
-        const mockOrderId = 'DENORM_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        return { orderId: mockOrderId, totalAmount };
+        // Return the actual database-generated order_id for consistency with normalized response
+        return { orderId: orderId, totalAmount };
     } catch (error) {
         await client.query('ROLLBACK');
         throw error;
@@ -477,18 +519,24 @@ app.post('/api/oltp/normalized/place-order', async (req, res) => {
 
 app.post('/api/oltp/denormalized/place-order', async (req, res) => {
     try {
-        const { customerData, storeData, employeeData, items } = req.body;
+        const { customer_id, store_id, employee_id, items, order_type } = req.body;
 
         // Validate input
-        if (!customerData || !storeData || !employeeData || !items || items.length === 0) {
+        if (!customer_id || !store_id || !employee_id || !items || items.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Missing required fields: customerData, storeData, employeeData, items',
+                error: 'Missing required fields: customer_id, store_id, employee_id, items',
                 code: 'INVALID_INPUT'
             });
         }
 
-        const result = await measureQueryTime(placeOrderDenormalized)(customerData, storeData, employeeData, items);
+        const result = await measureQueryTime(placeOrderDenormalized)({
+            customer_id,
+            store_id,
+            employee_id,
+            items,
+            order_type
+        });
 
         if (result.success) {
             res.json({
