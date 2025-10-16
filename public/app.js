@@ -8,6 +8,7 @@ class DatabaseSimulator {
         this.currentTab = 'overview';
         this.simulationResults = null; // Store simulation results for Analytics tab
         this.hasSimulationRun = false; // Track if simulation has been executed
+        this.schemaDataLoaded = false; // Track if schema view data has been loaded
         this.initializeEventListeners();
         this.loadSampleData();
         this.loadTableSchemas();
@@ -63,6 +64,11 @@ class DatabaseSimulator {
         // Trigger specific actions for certain tabs
         if (tabName === 'analytics') {
             this.updateAnalyticsTab();
+        } else if (tabName === 'schema') {
+            // Load schema data when schema tab is first accessed
+            if (!this.schemaDataLoaded) {
+                this.loadSchemaViewData();
+            }
         }
     }
 
@@ -862,27 +868,181 @@ class DatabaseSimulator {
         document.body.style.overflow = 'auto'; // Restore scrolling
     }
 
-    showSchema(schemaType) {
+    showSchemaView(schemaType) {
         this.currentSchema = schemaType;
 
-        // Update tab buttons
-        const tabButtons = document.querySelectorAll('.tab-button');
-        tabButtons.forEach(button => {
+        // Update schema tab buttons
+        const schemaTabButtons = document.querySelectorAll('.schema-tab-button');
+        schemaTabButtons.forEach(button => {
             button.classList.remove('active');
         });
         event.target.classList.add('active');
 
-        // Show/hide schema content
-        const normalizedContent = document.getElementById('normalizedSchema');
-        const denormalizedContent = document.getElementById('denormalizedSchema');
+        // Show/hide schema view content
+        const normalizedView = document.getElementById('normalizedView');
+        const denormalizedView = document.getElementById('denormalizedView');
 
         if (schemaType === 'normalized') {
-            normalizedContent.style.display = 'block';
-            denormalizedContent.style.display = 'none';
+            normalizedView.style.display = 'block';
+            denormalizedView.style.display = 'none';
         } else {
-            normalizedContent.style.display = 'none';
-            denormalizedContent.style.display = 'block';
+            normalizedView.style.display = 'none';
+            denormalizedView.style.display = 'block';
         }
+
+        // Load schema data if not already loaded
+        if (!this.schemaDataLoaded) {
+            this.loadSchemaViewData();
+        }
+    }
+
+    async loadSchemaViewData() {
+        try {
+            // Define schema information
+            const normalizedSchema = {
+                'customers': {
+                    columns: ['customer_id', 'first_name', 'last_name', 'email', 'phone', 'created_at'],
+                    description: 'Customer information and contact details'
+                },
+                'stores': {
+                    columns: ['store_id', 'store_name', 'location', 'phone', 'manager_id', 'created_at'],
+                    description: 'Store locations and management information'
+                },
+                'employees': {
+                    columns: ['employee_id', 'first_name', 'last_name', 'position', 'store_id', 'hire_date', 'salary', 'created_at'],
+                    description: 'Employee details and store assignments'
+                },
+                'menu_items': {
+                    columns: ['menu_item_id', 'item_name', 'category', 'price', 'description', 'available', 'created_at'],
+                    description: 'Available menu items and pricing'
+                },
+                'orders': {
+                    columns: ['order_id', 'customer_id', 'store_id', 'employee_id', 'order_date', 'total_amount', 'order_type', 'status'],
+                    description: 'Order headers with customer and store references'
+                },
+                'order_items': {
+                    columns: ['order_item_id', 'order_id', 'menu_item_id', 'quantity', 'unit_price', 'subtotal', 'created_at'],
+                    description: 'Individual items within each order'
+                }
+            };
+
+            const denormalizedSchema = {
+                'denormalized_orders': {
+                    columns: ['order_id', 'order_date', 'total_amount', 'order_type', 'status', 'customer_id', 'customer_first_name', 'customer_last_name', 'customer_email', 'customer_phone', 'store_id', 'store_name', 'store_location', 'store_phone', 'employee_id', 'employee_first_name', 'employee_last_name', 'employee_position', 'menu_item_id', 'item_name', 'category', 'unit_price', 'quantity', 'subtotal', 'order_month', 'order_day', 'order_hour'],
+                    description: 'Combined order data with redundant customer, store, and employee information'
+                },
+                'denormalized_analytics': {
+                    columns: ['analytics_id', 'analytics_date', 'store_id', 'store_name', 'category', 'total_orders', 'total_revenue', 'avg_order_value', 'total_customers', 'created_at'],
+                    description: 'Pre-aggregated analytics data for OLAP queries'
+                }
+            };
+
+            // Display normalized schema in the new structure
+            this.displaySchemaView('normalizedView', normalizedSchema);
+
+            // Display denormalized schema in the new structure
+            this.displaySchemaView('denormalizedView', denormalizedSchema);
+
+            // Load sample data for each table
+            await this.loadSchemaViewSampleData();
+
+            this.schemaDataLoaded = true;
+
+        } catch (error) {
+            console.error('Error loading schema view data:', error);
+        }
+    }
+
+    displaySchemaView(containerId, schemaData) {
+        const container = document.querySelector(`#${containerId} .tables-container`);
+
+        let html = '';
+        for (const [tableName, tableInfo] of Object.entries(schemaData)) {
+            html += `
+                <div class="table-card">
+                    <h4>${tableName}</h4>
+                    <div class="table-info">
+                        <strong>Description:</strong> ${tableInfo.description}
+                    </div>
+                    <div class="table-info">
+                        <strong>Columns:</strong>
+                        <ul class="column-list">
+                            ${tableInfo.columns.map(col => `<li>${col}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="sample-data">
+                        <h5>Sample Data:</h5>
+                        <div class="data-table-container" id="${tableName}ViewData">
+                            <p>Loading sample data...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+    }
+
+    async loadSchemaViewSampleData() {
+        try {
+            // Load sample data from API
+            const response = await fetch('/api/sample-data');
+            const data = await response.json();
+
+            if (data.success) {
+                // Display sample data for normalized tables
+                this.displaySchemaViewSampleData('customers', data.customers.slice(0, 3));
+                this.displaySchemaViewSampleData('stores', data.stores.slice(0, 3));
+                this.displaySchemaViewSampleData('employees', data.employees.slice(0, 3));
+                this.displaySchemaViewSampleData('menu_items', data.menuItems.slice(0, 3));
+
+                // For orders and order_items, show placeholder data
+                this.displaySchemaViewPlaceholderData('orders');
+                this.displaySchemaViewPlaceholderData('order_items');
+                this.displaySchemaViewPlaceholderData('denormalized_orders');
+                this.displaySchemaViewPlaceholderData('denormalized_analytics');
+            }
+        } catch (error) {
+            console.error('Error loading schema view sample data:', error);
+        }
+    }
+
+    displaySchemaViewSampleData(tableName, data) {
+        const container = document.getElementById(`${tableName}ViewData`);
+        if (!container || !data || data.length === 0) return;
+
+        const headers = Object.keys(data[0]);
+
+        let html = '<table class="data-table">';
+        html += '<thead><tr>';
+        headers.forEach(header => {
+            html += `<th>${this.formatHeaderName(header)}</th>`;
+        });
+        html += '</tr></thead>';
+
+        html += '<tbody>';
+        data.forEach(row => {
+            html += '<tr>';
+            headers.forEach(header => {
+                html += `<td>${row[header] || 'N/A'}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+
+        container.innerHTML = html;
+    }
+
+    displaySchemaViewPlaceholderData(tableName) {
+        const container = document.getElementById(`${tableName}ViewData`);
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="data-table-container">
+                <p style="color: #6c757d; font-style: italic;">Sample data available in full application</p>
+                <small style="color: #adb5bd;">Table contains ${tableName === 'orders' ? '80+' : '10+'} records</small>
+            </div>
+        `;
     }
 
     async loadTableSchemas() {
@@ -1046,6 +1206,11 @@ function runSimulation(workloadType, schemaType) {
 
 function showTab(tabName) {
     window.simulator.showTab(tabName);
+}
+
+// Schema view functions for global access
+function showSchemaView(schemaType) {
+    window.simulator.showSchemaView(schemaType);
 }
 
 // Modal functions for global access

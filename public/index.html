@@ -29,17 +29,9 @@
                     <span class="tab-icon">🗃️</span>
                     <span class="tab-text">Data & APIs</span>
                 </button>
-                <button class="tab-nav-button" onclick="showTab('analytics')">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-text">Analytics</span>
-                </button>
                 <button class="tab-nav-button" onclick="showTab('schema')">
                     <span class="tab-icon">📋</span>
                     <span class="tab-text">Schema Explorer</span>
-                </button>
-                <button class="tab-nav-button" onclick="showTab('about')">
-                    <span class="tab-icon">ℹ️</span>
-                    <span class="tab-text">About</span>
                 </button>
             </div>
 
@@ -188,15 +180,33 @@
                             Explore the structure and relationships of both normalized and denormalized database schemas.
                         </p>
 
-                        <div class="schema-actions">
-                            <button class="action-button primary" onclick="showTablesModal()">
-                                <span class="action-icon">🔍</span>
-                                <span>Explore Schema Details</span>
-                            </button>
-                            <button class="action-button secondary" onclick="showTab('about')">
-                                <span class="action-icon">📚</span>
-                                <span>Learn About Schemas</span>
-                            </button>
+                        <div class="schema-tabs">
+                            <button class="schema-tab-button active" onclick="showSchemaView('normalized')">Normalized Schema (3NF)</button>
+                            <button class="schema-tab-button" onclick="showSchemaView('denormalized')">Denormalized Schema</button>
+                        </div>
+
+                        <div class="schema-view-content">
+                            <!-- Normalized Schema View -->
+                            <div class="schema-view active" id="normalizedView">
+                                <div class="schema-description">
+                                    <h3>Normalized Schema (3NF)</h3>
+                                    <p>Follows normalization principles with minimal data redundancy and proper relationships.</p>
+                                </div>
+                                <div class="tables-container">
+                                    <!-- Tables will be populated by JavaScript -->
+                                </div>
+                            </div>
+
+                            <!-- Denormalized Schema View -->
+                            <div class="schema-view" id="denormalizedView" style="display: none;">
+                                <div class="schema-description">
+                                    <h3>Denormalized Schema</h3>
+                                    <p>Combines multiple entities for optimized read performance with redundant data.</p>
+                                </div>
+                                <div class="tables-container">
+                                    <!-- Tables will be populated by JavaScript -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
