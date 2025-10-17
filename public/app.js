@@ -385,34 +385,76 @@ class DatabaseSimulator {
     }
 
     generateRandomOrder() {
+        // Comprehensive fallback data if API doesn't work or data is incomplete
+        const fallbackOrder = {
+            customerId: 1,
+            storeId: 1,
+            employeeId: 2,
+            items: [
+                { menuItemId: 1, name: 'Classic Burger', category: 'Burgers', unitPrice: 8.99, quantity: 1, subtotal: 8.99 }
+            ]
+        };
+
         if (!this.sampleData) {
-            // Fallback data if API doesn't work
-            return {
-                customerId: 1,
-                storeId: 1,
-                employeeId: 2,
-                items: [
-                    { menuItemId: 1, name: 'Classic Burger', category: 'Burgers', unitPrice: 8.99, quantity: 1, subtotal: 8.99 }
-                ]
-            };
+            return fallbackOrder;
         }
 
-        const customer = this.sampleData.customers[Math.floor(Math.random() * this.sampleData.customers.length)];
-        const store = this.sampleData.stores[Math.floor(Math.random() * this.sampleData.stores.length)];
-        const employee = this.sampleData.employees.filter(emp => emp.position !== 'Store Manager')[Math.floor(Math.random() * 8)];
-        const menuItem = this.sampleData.menuItems[Math.floor(Math.random() * this.sampleData.menuItems.length)];
+        // Helper function to safely get random element from array
+        const getRandomElement = (array, fallback) => {
+            if (!Array.isArray(array) || array.length === 0) {
+                return fallback;
+            }
+            return array[Math.floor(Math.random() * array.length)];
+        };
+
+        // Helper function to safely get filtered random element
+        const getRandomFilteredElement = (array, filterFn, fallback) => {
+            if (!Array.isArray(array) || array.length === 0) {
+                return fallback;
+            }
+            const filtered = array.filter(filterFn);
+            return getRandomElement(filtered, fallback);
+        };
+
+        // Safely get data with fallbacks
+        const customers = this.sampleData.customers || [];
+        const stores = this.sampleData.stores || [];
+        const employees = this.sampleData.employees || [];
+        const menuItems = this.sampleData.menuItems || [];
+
+        // Fallback data objects
+        const fallbackCustomer = { id: 1, first_name: 'John', last_name: 'Doe' };
+        const fallbackStore = { id: 1, store_name: 'Main Store' };
+        const fallbackEmployee = { id: 2, first_name: 'Jane', last_name: 'Smith', position: 'Cashier' };
+        const fallbackMenuItem = { id: 1, name: 'Classic Burger', category: 'Burgers', price: '8.99' };
+
+        // Get random elements with fallbacks
+        const customer = getRandomElement(customers, fallbackCustomer);
+        const store = getRandomElement(stores, fallbackStore);
+        const employee = getRandomFilteredElement(
+            employees,
+            emp => emp && emp.position !== 'Store Manager',
+            fallbackEmployee
+        );
+        const menuItem = getRandomElement(menuItems, fallbackMenuItem);
+
+        // Ensure we have valid IDs
+        const customerId = customer && customer.id ? customer.id : fallbackCustomer.id;
+        const storeId = store && store.id ? store.id : fallbackStore.id;
+        const employeeId = employee && employee.id ? employee.id : fallbackEmployee.id;
+        const menuItemId = menuItem && menuItem.id ? menuItem.id : fallbackMenuItem.id;
 
         return {
-            customerId: customer.id,
-            storeId: store.id,
-            employeeId: employee.id,
+            customerId: customerId,
+            storeId: storeId,
+            employeeId: employeeId,
             items: [{
-                menuItemId: menuItem.id,
-                name: menuItem.name,
-                category: menuItem.category,
-                unitPrice: parseFloat(menuItem.price),
+                menuItemId: menuItemId,
+                name: menuItem && menuItem.name ? menuItem.name : fallbackMenuItem.name,
+                category: menuItem && menuItem.category ? menuItem.category : fallbackMenuItem.category,
+                unitPrice: menuItem && menuItem.price ? parseFloat(menuItem.price) : parseFloat(fallbackMenuItem.price),
                 quantity: Math.floor(Math.random() * 3) + 1,
-                subtotal: parseFloat(menuItem.price) * (Math.floor(Math.random() * 3) + 1)
+                subtotal: menuItem && menuItem.price ? parseFloat(menuItem.price) * (Math.floor(Math.random() * 3) + 1) : parseFloat(fallbackMenuItem.price) * (Math.floor(Math.random() * 3) + 1)
             }]
         };
     }
