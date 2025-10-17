@@ -25,13 +25,13 @@
                     <span class="tab-icon">🏠</span>
                     <span class="tab-text">Overview</span>
                 </button>
-                <button class="tab-nav-button" onclick="showTab('data')">
-                    <span class="tab-icon">🗃️</span>
+                <button class="tab-nav-button" onclick="showTab('simulation')">
+                    <span class="tab-icon">🧪</span>
                     <span class="tab-text">Simulation</span>
                 </button>
-                <button class="tab-nav-button" onclick="showTab('schema')">
+                <button class="tab-nav-button" onclick="showTab('schemas')">
                     <span class="tab-icon">📋</span>
-                    <span class="tab-text">Schema Explorer</span>
+                    <span class="tab-text">Schemas</span>
                 </button>
             </div>
 
@@ -162,58 +162,66 @@
                 </div>
 
                 <!-- Simulation Tab -->
-                <div class="tab-panel" id="data">
+                <div class="tab-panel" id="simulation">
                     <div class="simulation-section">
                         <h2>Database Performance Simulations</h2>
-                        <h3>🚀 Database Performance Simulations</h3>
                         <p class="section-description">
                             Run interactive simulations to compare normalized vs denormalized database performance
                             under different workload conditions.
                         </p>
 
-                        <div class="unified-simulation-section">
-                            <p class="section-description">
-                                Compare normalized and denormalized database performance across different workload types.
-                            </p>
-
-                            <div class="simulation-grid">
-                                <!-- OLTP Section -->
-                                <div class="workload-section">
-                                    <div class="workload-header">
-                                        <h4>📝 Transactional (OLTP)</h4>
-                                        <p class="workload-subtitle">Write-heavy operations</p>
-                                    </div>
-                                    <div class="schema-comparison">
-                                        <button class="sim-button primary" onclick="runSimulation('oltp')">
-                                            <span class="button-text">
-                                                <strong>Simulate</strong><br>
-                                                <small>Compare Both Schemas</small>
-                                            </span>
-                                        </button>
-                                    </div>
+                        <div class="simulation-grid">
+                            <!-- OLTP Section -->
+                            <div class="workload-section">
+                                <div class="workload-header">
+                                    <h4>📝 Transactional (OLTP)</h4>
+                                    <p class="workload-subtitle">Write-heavy operations</p>
                                 </div>
+                                <div class="schema-comparison">
+                                    <button class="sim-button oltp" onclick="runSimulation('oltp')">
+                                        <span class="button-text">
+                                            <strong>Run OLTP Test</strong><br>
+                                            <small>Click to Simulate</small>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
 
-                                <!-- OLAP Section -->
-                                <div class="workload-section">
-                                    <div class="workload-header">
-                                        <h4>📊 Analytical (OLAP)</h4>
-                                        <p class="workload-subtitle">Read-heavy operations</p>
-                                    </div>
-                                    <div class="schema-comparison">
-                                        <button class="sim-button primary" onclick="runSimulation('olap')">
-                                            <span class="button-text">
-                                                <strong>Simulate</strong><br>
-                                                <small>Compare Both Schemas</small>
-                                            </span>
-                                        </button>
-                                    </div>
+                            <!-- OLAP Section -->
+                            <div class="workload-section">
+                                <div class="workload-header">
+                                    <h4>📊 Analytical (OLAP)</h4>
+                                    <p class="workload-subtitle">Read-heavy operations</p>
+                                </div>
+                                <div class="schema-comparison">
+                                    <button class="sim-button olap" onclick="runSimulation('olap')">
+                                        <span class="button-text">
+                                            <strong>Run OLAP Test</strong><br>
+                                            <small>Click to Simulate</small>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Key Takeaways for Simulation -->
+                        <div class="simulation-takeaways">
+                            <h3>💡 Expected Results</h3>
+                            <div class="takeaway-cards">
+                                <div class="takeaway-card">
+                                    <h4>OLTP Workloads</h4>
+                                    <p>Normalized schemas typically perform better for transactional operations due to ACID compliance and data integrity.</p>
+                                </div>
+                                <div class="takeaway-card">
+                                    <h4>OLAP Workloads</h4>
+                                    <p>Denormalized schemas usually show better performance for analytical queries due to reduced JOIN complexity.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Simulation Results Section (Simulation tab only) -->
-                    <div class="results-section" id="dataResultsSection" style="display: none;">
+                    <!-- Simulation Results Section -->
+                    <div class="results-section" id="simulationResultsSection" style="display: none;">
                         <h2>Simulation Results</h2>
 
                         <!-- Performance Metrics -->
@@ -223,18 +231,18 @@
                                 <div class="metric-comparison">
                                     <div class="metric-item normalized">
                                         <span class="label">Normalized:</span>
-                                        <span class="value" id="dataNormalizedTime">-</span>
+                                        <span class="value" id="simulationNormalizedTime">-</span>
                                     </div>
                                     <div class="metric-item denormalized">
                                         <span class="label">Denormalized:</span>
-                                        <span class="value" id="dataDenormalizedTime">-</span>
+                                        <span class="value" id="simulationDenormalizedTime">-</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="metric-card">
                                 <h3>Performance Difference</h3>
-                                <div class="performance-diff" id="dataPerformanceDiff">
+                                <div class="performance-diff" id="simulationPerformanceDiff">
                                     <!-- Will be populated by JavaScript -->
                                 </div>
                             </div>
@@ -245,13 +253,13 @@
                             <div class="schema-panel">
                                 <h3>Normalized Schema</h3>
                                 <div class="schema-info">
-                                    <p><strong>Structure:</strong> <span id="dataNormalizedStructure">-</span></p>
-                                    <p><strong>Tables:</strong> <span id="dataNormalizedTables">-</span></p>
-                                    <p><strong>Query:</strong> <span id="dataNormalizedQuery">-</span></p>
+                                    <p><strong>Structure:</strong> <span id="simulationNormalizedStructure">-</span></p>
+                                    <p><strong>Tables:</strong> <span id="simulationNormalizedTables">-</span></p>
+                                    <p><strong>Query:</strong> <span id="simulationNormalizedQuery">-</span></p>
                                 </div>
                                 <div class="results-container">
                                     <h4>Results</h4>
-                                    <div class="results-table" id="dataNormalizedResults">
+                                    <div class="results-table" id="simulationNormalizedResults">
                                         <!-- Will be populated by JavaScript -->
                                     </div>
                                 </div>
@@ -260,13 +268,13 @@
                             <div class="schema-panel">
                                 <h3>Denormalized Schema</h3>
                                 <div class="schema-info">
-                                    <p><strong>Structure:</strong> <span id="dataDenormalizedStructure">-</span></p>
-                                    <p><strong>Tables:</strong> <span id="dataDenormalizedTables">-</span></p>
-                                    <p><strong>Query:</strong> <span id="dataDenormalizedQuery">-</span></p>
+                                    <p><strong>Structure:</strong> <span id="simulationDenormalizedStructure">-</span></p>
+                                    <p><strong>Tables:</strong> <span id="simulationDenormalizedTables">-</span></p>
+                                    <p><strong>Query:</strong> <span id="simulationDenormalizedQuery">-</span></p>
                                 </div>
                                 <div class="results-container">
                                     <h4>Results</h4>
-                                    <div class="results-table" id="dataDenormalizedResults">
+                                    <div class="results-table" id="simulationDenormalizedResults">
                                         <!-- Will be populated by JavaScript -->
                                     </div>
                                 </div>
@@ -289,39 +297,16 @@
                                 </div>
                             </div>
                             <div class="chart-wrapper">
-                                <canvas id="dataPerformanceChart" width="800" height="400"></canvas>
+                                <canvas id="simulationPerformanceChart" width="800" height="400"></canvas>
                             </div>
                         </div>
 
                     </div>
                 </div>
 
-                <!-- Analytics Tab -->
-                <div class="tab-panel" id="analytics">
-                    <div class="analytics-section">
-                        <h2>Performance Analytics Dashboard</h2>
-                        <p class="section-description">
-                            View detailed analytics and performance comparisons from previous simulation runs.
-                        </p>
 
-                        <div class="analytics-placeholder">
-                            <div class="placeholder-content">
-                                <span class="placeholder-icon">📈</span>
-                                <h3>Run Simulations to View Analytics</h3>
-                                <p>Use the "Simulation" tab to run simulations and generate performance analytics.</p>
-                                <button class="cta-button" onclick="showTab('data')">Go to Simulations</button>
-                            </div>
-                        </div>
-
-                        <!-- Analytics Results Container (populated dynamically) -->
-                        <div class="analytics-content" style="display: none;">
-                            <!-- Content populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Schema Explorer Tab -->
-                <div class="tab-panel" id="schema">
+                <!-- Schemas Tab -->
+                <div class="tab-panel" id="schemas">
                     <div class="schema-section">
                         <h2>Database Schema Explorer</h2>
                         <p class="section-description">
@@ -336,10 +321,6 @@
                         <div class="schema-view-content">
                             <!-- Normalized Schema View -->
                             <div class="schema-view active" id="normalizedView">
-                                <div class="schema-description">
-                                    <h3>Normalized Schema (3NF)</h3>
-                                    <p>Follows normalization principles with minimal data redundancy and proper relationships.</p>
-                                </div>
                                 <div class="tables-container">
                                     <!-- Tables will be populated by JavaScript -->
                                 </div>
@@ -347,10 +328,6 @@
 
                             <!-- Denormalized Schema View -->
                             <div class="schema-view" id="denormalizedView" style="display: none;">
-                                <div class="schema-description">
-                                    <h3>Denormalized Schema</h3>
-                                    <p>Combines multiple entities for optimized read performance with redundant data.</p>
-                                </div>
                                 <div class="tables-container">
                                     <!-- Tables will be populated by JavaScript -->
                                 </div>
@@ -359,65 +336,6 @@
                     </div>
                 </div>
 
-                <!-- About Tab -->
-                <div class="tab-panel" id="about">
-                    <div class="about-section">
-                        <h2>About Database Normalization</h2>
-                        <p class="section-description">
-                            Learn about database design principles and the trade-offs between different schema approaches.
-                        </p>
-
-                        <div class="education-cards">
-                            <div class="education-card">
-                                <h3>🗄️ Database Normalization</h3>
-                                <p>Process of organizing data to minimize redundancy and improve data integrity through normal forms (1NF, 2NF, 3NF, BCNF).</p>
-                                <div class="pros-cons">
-                                    <div class="pros">
-                                        <strong>Advantages:</strong>
-                                        <ul>
-                                            <li>Eliminates data redundancy</li>
-                                            <li>Improves data consistency</li>
-                                            <li>Better ACID compliance</li>
-                                            <li>Easier to maintain and update</li>
-                                        </ul>
-                                    </div>
-                                    <div class="cons">
-                                        <strong>Considerations:</strong>
-                                        <ul>
-                                            <li>Complex queries with JOINs</li>
-                                            <li>Potentially slower reads</li>
-                                            <li>More tables to manage</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="education-card">
-                                <h3>⚡ Database Denormalization</h3>
-                                <p>Process of combining tables to improve read performance by adding redundant data and reducing the need for JOINs.</p>
-                                <div class="pros-cons">
-                                    <div class="pros">
-                                        <strong>Advantages:</strong>
-                                        <ul>
-                                            <li>Faster query performance</li>
-                                            <li>Simplified query structure</li>
-                                            <li>Better for read-heavy workloads</li>
-                                            <li>Reduced query complexity</li>
-                                        </ul>
-                                    </div>
-                                    <div class="cons">
-                                        <strong>Considerations:</strong>
-                                        <ul>
-                                            <li>Data redundancy</li>
-                                            <li>Update anomalies</li>
-                                            <li>Larger storage requirements</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
             </div>
         </section>

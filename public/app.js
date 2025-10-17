@@ -6,7 +6,7 @@ class DatabaseSimulator {
         this.tablesModal = null;
         this.currentSchema = 'normalized';
         this.currentTab = 'overview';
-        this.simulationResults = null; // Store simulation results for Analytics tab
+        this.simulationResults = null; // Store simulation results for display
         this.hasSimulationRun = false; // Track if simulation has been executed
         this.schemaDataLoaded = false; // Track if schema view data has been loaded
         this.initializeEventListeners();
@@ -62,108 +62,17 @@ class DatabaseSimulator {
         this.currentTab = tabName;
 
         // Trigger specific actions for certain tabs
-        if (tabName === 'analytics') {
-            this.updateAnalyticsTab();
-        } else if (tabName === 'schema') {
-            // Load schema data when schema tab is first accessed
-            if (!this.schemaDataLoaded) {
-                this.loadSchemaViewData();
-            }
-        }
+         if (tabName === 'schemas') {
+             // Load schema data when schemas tab is first accessed
+             if (!this.schemaDataLoaded) {
+                 this.loadSchemaViewData();
+             }
+         }
     }
 
-    updateAnalyticsTab() {
-        const analyticsPlaceholder = document.querySelector('.analytics-placeholder');
+    // Analytics functionality removed - consolidated into simulation results
 
-        if (this.hasSimulationRun && this.simulationResults) {
-            // Hide placeholder and show actual results
-            if (analyticsPlaceholder) {
-                analyticsPlaceholder.style.display = 'none';
-            }
-
-            // Update analytics content with real data
-            this.displayAnalyticsResults();
-        } else {
-            // Show placeholder if no simulation has run
-            if (analyticsPlaceholder) {
-                analyticsPlaceholder.style.display = 'flex';
-            }
-        }
-    }
-
-    displayAnalyticsResults() {
-        if (!this.simulationResults) return;
-
-        const { workloadType, schemaType, normalizedResult, denormalizedResult } = this.simulationResults;
-
-        // Update analytics section with real data
-        const analyticsSection = document.querySelector('.analytics-section');
-        if (analyticsSection) {
-            analyticsSection.innerHTML = `
-                <h2>Performance Analytics Dashboard</h2>
-                <p class="section-description">
-                    Real-time analytics and performance comparisons from your latest simulation run.
-                </p>
-
-                <div class="analytics-content">
-                    <div class="simulation-summary">
-                        <h3>Latest Simulation Results</h3>
-                        <div class="summary-cards">
-                            <div class="summary-card">
-                                <strong>Workload Type:</strong> ${workloadType.toUpperCase()}
-                            </div>
-                            <div class="summary-card">
-                                <strong>Tested Schema:</strong> ${schemaType.charAt(0).toUpperCase() + schemaType.slice(1)}
-                            </div>
-                            <div class="summary-card">
-                                <strong>Execution Time:</strong> ${normalizedResult.executionTime}ms / ${denormalizedResult.executionTime}ms
-                            </div>
-                            <div class="summary-card">
-                                <strong>Performance Diff:</strong> ${this.calculatePerformanceDiff(normalizedResult, denormalizedResult)}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="results-preview">
-                        <h3>Schema Comparison Tables</h3>
-                        <div class="preview-tables">
-                            <div class="preview-table">
-                                <h4>Normalized Schema Results</h4>
-                                ${this.generatePreviewTable(normalizedResult.data)}
-                            </div>
-                            <div class="preview-table">
-                                <h4>Denormalized Schema Results</h4>
-                                ${this.generatePreviewTable(denormalizedResult.data)}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="chart-preview">
-                        <h3>Performance Visualization</h3>
-                        <div class="chart-container-mini">
-                            <canvas id="analyticsChart" width="600" height="300"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="analytics-actions">
-                        <button class="action-button primary" onclick="showTab('data')">
-                            <span>🔄</span>
-                            Run New Simulation
-                        </button>
-                        <button class="action-button secondary" onclick="window.simulator.createAnalyticsChart()">
-                            <span>📊</span>
-                            View Full Analytics
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            // Create analytics chart if it doesn't exist
-            if (!this.analyticsChart) {
-                this.createAnalyticsChart();
-            }
-        }
-    }
+    // Analytics functionality removed - consolidated into simulation results
 
     generatePreviewTable(data) {
         if (!data || !data.data || data.data.length === 0) {
@@ -199,59 +108,7 @@ class DatabaseSimulator {
         return html;
     }
 
-    createAnalyticsChart() {
-        if (!this.simulationResults) return;
-
-        const { normalizedResult, denormalizedResult } = this.simulationResults;
-        const ctx = document.getElementById('analyticsChart')?.getContext('2d');
-
-        if (!ctx) return;
-
-        // Destroy existing chart if it exists
-        if (this.analyticsChart) {
-            this.analyticsChart.destroy();
-        }
-
-        this.analyticsChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Normalized Schema', 'Denormalized Schema'],
-                datasets: [{
-                    label: 'Execution Time (ms)',
-                    data: [normalizedResult.executionTime, denormalizedResult.executionTime],
-                    backgroundColor: [
-                        'rgba(37, 99, 235, 0.8)',
-                        'rgba(16, 185, 129, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(37, 99, 235, 1)',
-                        'rgba(16, 185, 129, 1)'
-                    ],
-                    borderWidth: 2,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Analytics Dashboard - Performance Comparison',
-                        font: { size: 14, weight: 'bold' },
-                        color: '#374151'
-                    },
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Execution Time (ms)' }
-                    }
-                }
-            }
-        });
-    }
+    // Analytics chart functionality removed - consolidated into main performance chart
 
     calculatePerformanceDiff(normalizedResult, denormalizedResult) {
         const timeDiff = normalizedResult.executionTime - denormalizedResult.executionTime;
@@ -365,11 +222,6 @@ class DatabaseSimulator {
 
             this.displayResults(workloadType, schemaType || 'both', normalizedResult, denormalizedResult);
             this.createPerformanceChart(workloadType, normalizedResult, denormalizedResult);
-
-            // Update Analytics tab if it's currently active
-            if (this.currentTab === 'analytics') {
-                this.updateAnalyticsTab();
-            }
 
             // Show success feedback - updated message for new single-button interface
             const schemaText = schemaType ? `${schemaType} schema` : 'both schemas';
@@ -559,14 +411,14 @@ class DatabaseSimulator {
     }
 
     displayResults(workloadType, schemaType, normalizedResult, denormalizedResult) {
-        // Update performance metrics with data tab specific IDs
-        document.getElementById('dataNormalizedTime').textContent = `${normalizedResult.executionTime}ms`;
-        document.getElementById('dataDenormalizedTime').textContent = `${denormalizedResult.executionTime}ms`;
+        // Update performance metrics with simulation tab specific IDs
+         document.getElementById('simulationNormalizedTime').textContent = `${normalizedResult.executionTime}ms`;
+         document.getElementById('simulationDenormalizedTime').textContent = `${denormalizedResult.executionTime}ms`;
 
         // Calculate and display performance difference with enhanced analysis
         const analysis = this.getPerformanceAnalysis(workloadType, normalizedResult, denormalizedResult);
 
-        const diffElement = document.getElementById('dataPerformanceDiff');
+        const diffElement = document.getElementById('simulationPerformanceDiff');
         diffElement.innerHTML = `
             <div class="performance-winner">
                 <span class="winner-name">${analysis.winner} Schema</span>
@@ -581,17 +433,17 @@ class DatabaseSimulator {
         const normalizedInfo = this.getSchemaInfo(workloadType, 'normalized');
         const denormalizedInfo = this.getSchemaInfo(workloadType, 'denormalized');
 
-        document.getElementById('dataNormalizedStructure').textContent = normalizedInfo.structure;
-        document.getElementById('dataNormalizedTables').textContent = normalizedInfo.tables;
-        document.getElementById('dataNormalizedQuery').textContent = normalizedInfo.query;
+        document.getElementById('simulationNormalizedStructure').textContent = normalizedInfo.structure;
+        document.getElementById('simulationNormalizedTables').textContent = normalizedInfo.tables;
+        document.getElementById('simulationNormalizedQuery').textContent = normalizedInfo.query;
 
-        document.getElementById('dataDenormalizedStructure').textContent = denormalizedInfo.structure;
-        document.getElementById('dataDenormalizedTables').textContent = denormalizedInfo.tables;
-        document.getElementById('dataDenormalizedQuery').textContent = denormalizedInfo.query;
+        document.getElementById('simulationDenormalizedStructure').textContent = denormalizedInfo.structure;
+        document.getElementById('simulationDenormalizedTables').textContent = denormalizedInfo.tables;
+        document.getElementById('simulationDenormalizedQuery').textContent = denormalizedInfo.query;
 
         // Display results data with improved table layout
-        this.displayResultsTable('dataNormalizedResults', normalizedResult.data, 'normalized');
-        this.displayResultsTable('dataDenormalizedResults', denormalizedResult.data, 'denormalized');
+        this.displayResultsTable('simulationNormalizedResults', normalizedResult.data, 'normalized');
+        this.displayResultsTable('simulationDenormalizedResults', denormalizedResult.data, 'denormalized');
     }
 
     getSchemaInfo(workloadType, schemaType) {
@@ -722,7 +574,7 @@ class DatabaseSimulator {
     }
 
     createPerformanceChart(workloadType, normalizedResult, denormalizedResult) {
-        const ctx = document.getElementById('dataPerformanceChart').getContext('2d');
+        const ctx = document.getElementById('simulationPerformanceChart').getContext('2d');
 
         // Destroy existing chart if it exists
         if (this.performanceChart) {
@@ -892,12 +744,12 @@ class DatabaseSimulator {
     }
 
     showResults(show) {
-        // Only show results within the Data & APIs tab
-        if (this.currentTab !== 'data') {
+        // Only show results within the Simulation tab
+        if (this.currentTab !== 'simulation') {
             return;
         }
 
-        const resultsElement = document.getElementById('dataResultsSection');
+        const resultsElement = document.getElementById('simulationResultsSection');
         if (show) {
             resultsElement.style.display = 'block';
             // Smooth scroll to results within the tab
@@ -908,13 +760,13 @@ class DatabaseSimulator {
     }
 
     displayError(message) {
-        // Only show error within the Data & APIs tab
-        if (this.currentTab !== 'data') {
+        // Only show error within the Simulation tab
+        if (this.currentTab !== 'simulation') {
             return;
         }
 
         // Create enhanced error display with retry option
-        const resultsSection = document.getElementById('dataResultsSection');
+        const resultsSection = document.getElementById('simulationResultsSection');
         resultsSection.innerHTML = `
             <div class="error-container">
                 <div class="error-header">
@@ -927,9 +779,9 @@ class DatabaseSimulator {
                         <span>🔄</span>
                         Retry Simulation
                     </button>
-                    <button class="help-button" onclick="showTab('about')">
+                    <button class="help-button" onclick="showTab('overview')">
                         <span>📖</span>
-                        Get Help
+                        View Guide
                     </button>
                 </div>
                 <div class="error-details">
