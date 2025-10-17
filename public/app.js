@@ -356,14 +356,14 @@ class DatabaseSimulator {
             // Store simulation results for Analytics tab
             this.simulationResults = {
                 workloadType,
-                schemaType,
+                schemaType: schemaType || 'both', // Use 'both' for new single-button calls
                 normalizedResult,
                 denormalizedResult,
                 timestamp: new Date().toISOString()
             };
             this.hasSimulationRun = true;
 
-            this.displayResults(workloadType, schemaType, normalizedResult, denormalizedResult);
+            this.displayResults(workloadType, schemaType || 'both', normalizedResult, denormalizedResult);
             this.createPerformanceChart(workloadType, normalizedResult, denormalizedResult);
 
             // Update Analytics tab if it's currently active
@@ -371,8 +371,9 @@ class DatabaseSimulator {
                 this.updateAnalyticsTab();
             }
 
-            // Show success feedback
-            this.showSuccessMessage(`Simulation completed successfully! Processed ${workloadType.toUpperCase()} operations in ${schemaType} schema.`);
+            // Show success feedback - updated message for new single-button interface
+            const schemaText = schemaType ? `${schemaType} schema` : 'both schemas';
+            this.showSuccessMessage(`Simulation completed successfully! Processed ${workloadType.toUpperCase()} operations comparing ${schemaText}.`);
 
         } catch (error) {
             clearTimeout(simulationTimeout);
