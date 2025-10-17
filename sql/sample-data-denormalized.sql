@@ -3,7 +3,7 @@
 
 -- Insert sample denormalized orders (combining orders, customers, stores, employees, menu_items)
 INSERT INTO denormalized_orders (
-    order_id, order_date, total_amount, order_type, status,
+    order_date, total_amount, order_type, status,
     customer_id, customer_first_name, customer_last_name, customer_email, customer_phone,
     store_id, store_name, store_location, store_phone,
     employee_id, employee_first_name, employee_last_name, employee_position,
